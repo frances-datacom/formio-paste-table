@@ -983,30 +983,32 @@ export default class PasteTableComponent
     const existingValue =
       (this.dataValue as PasteTableValue) || this.getValue();
 
-    if (
-      existingValue &&
-      Array.isArray(existingValue.rows) &&
-      existingValue.rows.length
-    ) {
-      const seededRows = existingValue.rows
-        .slice(0, this.getMaxRows())
-        .map((row) => this.mapRowArrayToObject(row, headers));
+    this._table.on('tableBuilt', () => {
+      if (
+        existingValue &&
+        Array.isArray(existingValue.rows) &&
+        existingValue.rows.length
+      ) {
+        const seededRows = existingValue.rows
+          .slice(0, this.getMaxRows())
+          .map((row) => this.mapRowArrayToObject(row, headers));
 
-      if (seededRows.length < this.getMaxRows() && !isReadOnly) {
-        seededRows.push(this.createBlankRow(headers));
+        if (seededRows.length < this.getMaxRows() && !isReadOnly) {
+          seededRows.push(this.createBlankRow(headers));
+        }
+
+        this._tableValue = existingValue;
+        this.dataValue = existingValue;
+
+        this._isMutatingTable = true;
+        this._table!.replaceData(seededRows).finally(() => {
+          this._isMutatingTable = false;
+        });
+      } else {
+        this._tableValue = null;
+        this.dataValue = (this as any).emptyValue ?? null;
       }
-
-      this._tableValue = existingValue;
-      this.dataValue = existingValue;
-
-      this._isMutatingTable = true;
-      this._table.replaceData(seededRows).finally(() => {
-        this._isMutatingTable = false;
-      });
-    } else {
-      this._tableValue = null;
-      this.dataValue = (this as any).emptyValue ?? null;
-    }
+    });
   }
 
   /**

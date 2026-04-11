@@ -10632,15 +10632,17 @@ var An = class extends Q {
 			this._isMutatingTable || this.syncValueFromTable(n);
 		}));
 		let s = this.dataValue || this.getValue();
-		if (s && Array.isArray(s.rows) && s.rows.length) {
-			let e = s.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, n));
-			e.length < this.getMaxRows() && !r && e.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
-				this._isMutatingTable = !1;
-			});
-		} else {
-			var c;
-			this._tableValue = null, this.dataValue = (c = this.emptyValue) == null ? null : c;
-		}
+		this._table.on("tableBuilt", () => {
+			if (s && Array.isArray(s.rows) && s.rows.length) {
+				let e = s.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, n));
+				e.length < this.getMaxRows() && !r && e.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
+					this._isMutatingTable = !1;
+				});
+			} else {
+				var e;
+				this._tableValue = null, this.dataValue = (e = this.emptyValue) == null ? null : e;
+			}
+		});
 	}
 	validatePastedRows(e, t) {
 		let n = 0, r = 0;

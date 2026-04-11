@@ -15209,34 +15209,36 @@ var BCFormioPasteTable = function (e, t) {
             _this249._isMutatingTable || _this249.syncValueFromTable(n);
           }));
           var s = this.dataValue || this.getValue();
-          if (s && Array.isArray(s.rows) && s.rows.length) {
-            var _e613 = s.rows.slice(0, this.getMaxRows()).map(function (_e614) {
-              return _this249.mapRowArrayToObject(_e614, n);
-            });
-            _e613.length < this.getMaxRows() && !r && _e613.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(_e613).finally(function () {
-              _this249._isMutatingTable = !1;
-            });
-          } else {
-            var c;
-            this._tableValue = null, this.dataValue = (c = this.emptyValue) == null ? null : c;
-          }
+          this._table.on("tableBuilt", function () {
+            if (s && Array.isArray(s.rows) && s.rows.length) {
+              var _e614 = s.rows.slice(0, _this249.getMaxRows()).map(function (_e615) {
+                return _this249.mapRowArrayToObject(_e615, n);
+              });
+              _e614.length < _this249.getMaxRows() && !r && _e614.push(_this249.createBlankRow(n)), _this249._tableValue = s, _this249.dataValue = s, _this249._isMutatingTable = !0, _this249._table.replaceData(_e614).finally(function () {
+                _this249._isMutatingTable = !1;
+              });
+            } else {
+              var _e613;
+              _this249._tableValue = null, _this249.dataValue = (_e613 = _this249.emptyValue) == null ? null : _e613;
+            }
+          });
         }
       }, {
         key: "validatePastedRows",
-        value: function validatePastedRows(_e615, t) {
+        value: function validatePastedRows(_e616, t) {
           var n = 0,
             r = 0;
-          for (n = 0; n < _e615.length; n += 1) {
-            var _a4 = _e615[n];
+          for (n = 0; n < _e616.length; n += 1) {
+            var _a4 = _e616[n];
             if (_a4.length > t.length) return {
               isValid: !1,
               message: "The pasted content has more columns than this table allows."
             };
             for (r = 0; r < _a4.length; r += 1) {
               var i;
-              var _e616 = t[r],
+              var _e617 = t[r],
                 _n25 = (i = _a4[r]) == null ? "" : i,
-                _o6 = this.validateCellValue(_n25, _e616, "paste");
+                _o6 = this.validateCellValue(_n25, _e617, "paste");
               if (!_o6.isValid) return _o6;
             }
           }
@@ -15247,39 +15249,39 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "appendRowsFromClipboard",
-        value: function appendRowsFromClipboard(_e617, t) {
+        value: function appendRowsFromClipboard(_e618, t) {
           var _this250 = this;
           if (!this._table) return;
           var n = this.getMaxRows(),
             r = this._table.getData().map(function (t) {
-              return _this250.mapRowObjectToArray(t, _e617);
-            }).filter(function (_e618) {
-              return _e618.some(function (_e619) {
-                return String(_e619).trim() !== "";
+              return _this250.mapRowObjectToArray(t, _e618);
+            }).filter(function (_e619) {
+              return _e619.some(function (_e620) {
+                return String(_e620).trim() !== "";
               });
             }),
             i = t.map(function (t) {
-              return _e617.map(function (_e620, n) {
+              return _e618.map(function (_e621, n) {
                 var r;
                 return (r = t[n]) == null ? "" : r;
               });
             }),
             a = r.concat(i);
           if (a.length > n) {
-            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows.")), this.clearComponentToEmpty(_e617);
+            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows.")), this.clearComponentToEmpty(_e618);
             return;
           }
           var o = a.map(function (t) {
-            return _this250.mapRowArrayToObject(t, _e617);
+            return _this250.mapRowArrayToObject(t, _e618);
           });
-          a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(_e617)), this._isMutatingTable = !0, this._table.replaceData(o).finally(function () {
-            _this250._isMutatingTable = !1, _this250.syncValueFromTable(_e617);
+          a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(_e618)), this._isMutatingTable = !0, this._table.replaceData(o).finally(function () {
+            _this250._isMutatingTable = !1, _this250.syncValueFromTable(_e618);
           });
         }
       }, {
         key: "showError",
-        value: function showError(_e621) {
-          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e621, this.refs.errorMsg.style.display = "block");
+        value: function showError(_e622) {
+          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e622, this.refs.errorMsg.style.display = "block");
         }
       }, {
         key: "hideError",
@@ -15293,22 +15295,22 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "setValue",
-        value: function setValue(_e622) {
+        value: function setValue(_e623) {
           var _this251 = this;
-          this._tableValue = _e622, this.dataValue = _e622;
-          var t = this.getConfiguredColumnRules().map(function (_e623) {
-            return _e623.header;
+          this._tableValue = _e623, this.dataValue = _e623;
+          var t = this.getConfiguredColumnRules().map(function (_e624) {
+            return _e624.header;
           });
-          if (this._table && t.length) if (_e622 && Array.isArray(_e622.rows) && _e622.rows.length) {
-            var _n26 = _e622.rows.slice(0, this.getMaxRows()).map(function (_e624) {
-              return _this251.mapRowArrayToObject(_e624, t);
+          if (this._table && t.length) if (_e623 && Array.isArray(_e623.rows) && _e623.rows.length) {
+            var _n26 = _e623.rows.slice(0, this.getMaxRows()).map(function (_e625) {
+              return _this251.mapRowArrayToObject(_e625, t);
             });
             _n26.length < this.getMaxRows() && !this.isReadOnlyMode() && _n26.push(this.createBlankRow(t)), this._isMutatingTable = !0, this._table.replaceData(_n26).finally(function () {
               _this251._isMutatingTable = !1;
             });
           } else {
-            var _e625 = !this.isReadOnlyMode() && t.length ? [this.createBlankRow(t)] : [];
-            this._isMutatingTable = !0, this._table.replaceData(_e625).finally(function () {
+            var _e626 = !this.isReadOnlyMode() && t.length ? [this.createBlankRow(t)] : [];
+            this._isMutatingTable = !0, this._table.replaceData(_e626).finally(function () {
               _this251._isMutatingTable = !1;
             });
           }
