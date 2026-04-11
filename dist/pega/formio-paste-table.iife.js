@@ -14790,7 +14790,7 @@ var BCFormioPasteTable = function (e, t) {
         for (var _len = arguments.length, _e561 = new Array(_len), _key = 0; _key < _len; _key++) {
           _e561[_key] = arguments[_key];
         }
-        _this242 = _callSuper(this, e, [].concat(_e561)), a(_assertThisInitialized(_this242), "_table", null), a(_assertThisInitialized(_this242), "_tableValue", null), a(_assertThisInitialized(_this242), "_isMutatingTable", !1), a(_assertThisInitialized(_this242), "handleNativePaste", function (_e562) {
+        _this242 = _callSuper(this, e, [].concat(_e561)), a(_assertThisInitialized(_this242), "_table", null), a(_assertThisInitialized(_this242), "_tableValue", null), a(_assertThisInitialized(_this242), "_isMutatingTable", !1), a(_assertThisInitialized(_this242), "_isDetached", !1), a(_assertThisInitialized(_this242), "_initAttemptId", 0), a(_assertThisInitialized(_this242), "handleNativePaste", function (_e562) {
           var t;
           var n = _this242.getConfiguredColumnRules(),
             r = n.map(function (_e563) {
@@ -14899,7 +14899,7 @@ var BCFormioPasteTable = function (e, t) {
         key: "attach",
         value: function attach(_e571) {
           var t = _superPropGet(e, "attach", this, 3)([_e571]);
-          if (this.loadRefs(_e571, {
+          if (this._isDetached = !1, this._initAttemptId += 1, this.loadRefs(_e571, {
             labelEl: "single",
             userInfoEl: "single",
             infoMsg: "single",
@@ -14909,127 +14909,159 @@ var BCFormioPasteTable = function (e, t) {
             var n;
             (n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste);
           }
-          return this.initTableFromConfiguredHeaders(), t;
+          return this.scheduleSafeInit(this._initAttemptId, 0), t;
         }
       }, {
         key: "detach",
         value: function detach() {
           var _e572;
-          return (_e572 = this.refs.tabulatorTarget) == null || _e572.removeEventListener("paste", this.handleNativePaste), this._table && (this._table.destroy(), this._table = null), _superPropGet(e, "detach", this, 3)([]);
+          if (this._isDetached = !0, this._initAttemptId += 1, (_e572 = this.refs.tabulatorTarget) == null || _e572.removeEventListener("paste", this.handleNativePaste), this._table) {
+            try {
+              this._table.destroy();
+            } catch (_e573) {}
+            this._table = null;
+          }
+          return _superPropGet(e, "detach", this, 3)([]);
+        }
+      }, {
+        key: "scheduleSafeInit",
+        value: function scheduleSafeInit(_e574, t) {
+          var n = this;
+          requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+              if (!(n._isDetached || _e574 !== n._initAttemptId)) {
+                if (n.isTargetReadyForInit()) {
+                  n.initTableFromConfiguredHeaders();
+                  return;
+                }
+                t < 12 && n.scheduleSafeInit(_e574, t + 1);
+              }
+            });
+          });
+        }
+      }, {
+        key: "isTargetReadyForInit",
+        value: function isTargetReadyForInit() {
+          var _e575 = this.refs.tabulatorTarget;
+          if (!_e575 || !_e575.isConnected) return !1;
+          var t = _e575.getBoundingClientRect(),
+            n = t.width > 0 || t.height > 0,
+            r = !!_e575.offsetParent || _e575.closest("body");
+          return !!(n && r);
         }
       }, {
         key: "isEmpty",
-        value: function isEmpty(_e573) {
+        value: function isEmpty(_e576) {
           var _this244 = this;
-          return this.getEnteredRowsFromValue(_e573).filter(function (_e574) {
-            return _this244.isCompleteRowArray(_e574);
+          return this.getEnteredRowsFromValue(_e576).filter(function (_e577) {
+            return _this244.isCompleteRowArray(_e577);
           }).length === 0;
         }
       }, {
         key: "checkValidity",
-        value: function checkValidity(_e575, t, n, r, i) {
-          var a = Mn.prototype.checkValidity.call(this, _e575, t, n, r, i),
+        value: function checkValidity(_e578, t, n, r, i) {
+          var a = Mn.prototype.checkValidity.call(this, _e578, t, n, r, i),
             o = this.getValue(),
             s = this.getComponentValidationMessage(o);
           return this.setCustomValidity && this.setCustomValidity(s || "", t), i || (s ? this.showError(s) : this.hideError()), a && !s;
         }
       }, {
         key: "getComponentValidationMessage",
-        value: function getComponentValidationMessage(_e576) {
+        value: function getComponentValidationMessage(_e579) {
           var _this245 = this;
           var t = !!(this.component.validate && this.component.validate.required),
-            n = this.getEnteredRowsFromValue(_e576),
-            r = n.some(function (_e577) {
-              return _this245.isCompleteRowArray(_e577);
+            n = this.getEnteredRowsFromValue(_e579),
+            r = n.some(function (_e580) {
+              return _this245.isCompleteRowArray(_e580);
             }),
-            i = n.some(function (_e578) {
-              return _this245.isPartiallyFilledRowArray(_e578);
+            i = n.some(function (_e581) {
+              return _this245.isPartiallyFilledRowArray(_e581);
             });
           return t && !r || i ? this.getValidationMessage() : "";
         }
       }, {
         key: "getEnteredRowsFromValue",
-        value: function getEnteredRowsFromValue(_e579) {
-          return !_e579 || !Array.isArray(_e579.rows) ? [] : _e579.rows.map(function (_e580) {
-            return Array.isArray(_e580) ? _e580.map(function (_e581) {
-              return _e581 == null ? "" : String(_e581);
+        value: function getEnteredRowsFromValue(_e582) {
+          return !_e582 || !Array.isArray(_e582.rows) ? [] : _e582.rows.map(function (_e583) {
+            return Array.isArray(_e583) ? _e583.map(function (_e584) {
+              return _e584 == null ? "" : String(_e584);
             }) : [];
-          }).filter(function (_e582) {
-            return _e582.some(function (_e583) {
-              return String(_e583).trim() !== "";
+          }).filter(function (_e585) {
+            return _e585.some(function (_e586) {
+              return String(_e586).trim() !== "";
             });
           });
         }
       }, {
         key: "isCompleteRowArray",
-        value: function isCompleteRowArray(_e584) {
-          if (!_e584.length) return !1;
+        value: function isCompleteRowArray(_e587) {
+          if (!_e587.length) return !1;
           var t = 0;
-          for (t = 0; t < _e584.length; t += 1) if (String(_e584[t] || "").trim() === "") return !1;
+          for (t = 0; t < _e587.length; t += 1) if (String(_e587[t] || "").trim() === "") return !1;
           return !0;
         }
       }, {
         key: "isPartiallyFilledRowArray",
-        value: function isPartiallyFilledRowArray(_e585) {
-          var t = _e585.some(function (_e586) {
-              return String(_e586 || "").trim() !== "";
+        value: function isPartiallyFilledRowArray(_e588) {
+          var t = _e588.some(function (_e589) {
+              return String(_e589 || "").trim() !== "";
             }),
-            n = _e585.some(function (_e587) {
-              return String(_e587 || "").trim() === "";
+            n = _e588.some(function (_e590) {
+              return String(_e590 || "").trim() === "";
             });
           return t && n;
         }
       }, {
         key: "createBlankRow",
-        value: function createBlankRow(_e588) {
+        value: function createBlankRow(_e591) {
           var t = {};
-          return _e588.forEach(function (_e589) {
-            t[_e589] = "";
+          return _e591.forEach(function (_e592) {
+            t[_e592] = "";
           }), t;
         }
       }, {
         key: "parseClipboard",
-        value: function parseClipboard(_e590) {
-          return _e590.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(function (_e591) {
-            return _e591.trim() !== "";
-          }).map(function (_e592) {
-            return _e592.split("\t").map(function (_e593) {
-              return _e593.trim();
+        value: function parseClipboard(_e593) {
+          return _e593.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter(function (_e594) {
+            return _e594.trim() !== "";
+          }).map(function (_e595) {
+            return _e595.split("\t").map(function (_e596) {
+              return _e596.trim();
             });
           });
         }
       }, {
         key: "mapRowObjectToArray",
-        value: function mapRowObjectToArray(_e594, t) {
+        value: function mapRowObjectToArray(_e597, t) {
           return t.map(function (t) {
-            var n = _e594[t];
+            var n = _e597[t];
             return n == null ? "" : String(n);
           });
         }
       }, {
         key: "mapRowArrayToObject",
-        value: function mapRowArrayToObject(_e595, t) {
+        value: function mapRowArrayToObject(_e598, t) {
           var n = {};
           return t.forEach(function (t, r) {
             var i;
-            n[t] = (i = _e595[r]) == null ? "" : i;
+            n[t] = (i = _e598[r]) == null ? "" : i;
           }), n;
         }
       }, {
         key: "setStoredValue",
-        value: function setStoredValue(_e596, t) {
-          this._tableValue = _e596, this.dataValue = _e596, t && this.triggerChange();
+        value: function setStoredValue(_e599, t) {
+          this._tableValue = _e599, this.dataValue = _e599, t && this.triggerChange();
         }
       }, {
         key: "syncValueFromTable",
-        value: function syncValueFromTable(_e597) {
+        value: function syncValueFromTable(_e600) {
           var _this246 = this;
           if (!this._table) return;
           var t = this._table.getData().map(function (t) {
-            return _this246.mapRowObjectToArray(t, _e597);
-          }).filter(function (_e598) {
-            return _e598.some(function (_e599) {
-              return String(_e599).trim() !== "";
+            return _this246.mapRowObjectToArray(t, _e600);
+          }).filter(function (_e601) {
+            return _e601.some(function (_e602) {
+              return String(_e602).trim() !== "";
             });
           });
           if (!t.length) {
@@ -15038,34 +15070,34 @@ var BCFormioPasteTable = function (e, t) {
             return;
           }
           this.setStoredValue({
-            headers: _e597,
+            headers: _e600,
             rows: t
           }, !this.isBuilderPreview());
         }
       }, {
         key: "normalizeTableRows",
-        value: function normalizeTableRows(_e600) {
+        value: function normalizeTableRows(_e603) {
           var _this247 = this;
           if (!this._table) return;
           var t = this.getMaxRows(),
             n = this._table.getData().map(function (t) {
-              return _this247.mapRowObjectToArray(t, _e600);
-            }).filter(function (_e601) {
-              return _e601.some(function (_e602) {
-                return String(_e602).trim() !== "";
+              return _this247.mapRowObjectToArray(t, _e603);
+            }).filter(function (_e604) {
+              return _e604.some(function (_e605) {
+                return String(_e605).trim() !== "";
               });
             }).slice(0, t),
             r = n.map(function (t) {
-              return _this247.mapRowArrayToObject(t, _e600);
+              return _this247.mapRowArrayToObject(t, _e603);
             });
-          n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(_e600)), this._isMutatingTable = !0, this._table.setData(r).finally(function () {
-            _this247._isMutatingTable = !1, _this247.syncValueFromTable(_e600);
+          n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(_e603)), this._isMutatingTable = !0, this._table.setData(r).finally(function () {
+            _this247._isMutatingTable = !1, _this247.syncValueFromTable(_e603);
           });
         }
       }, {
         key: "validateCellValue",
-        value: function validateCellValue(_e603, t, n) {
-          var r = _e603 == null ? "" : String(_e603);
+        value: function validateCellValue(_e606, t, n) {
+          var r = _e606 == null ? "" : String(_e606);
           return r === "" ? {
             isValid: !0,
             message: ""
@@ -15085,43 +15117,43 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "containsUnsafePattern",
-        value: function containsUnsafePattern(_e604) {
-          return /<|>|javascript:|vbscript:|data:text\/html|on\w+\s*=|<script|<img|<svg|<iframe|&lt;|&gt;/i.test(_e604);
+        value: function containsUnsafePattern(_e607) {
+          return /<|>|javascript:|vbscript:|data:text\/html|on\w+\s*=|<script|<img|<svg|<iframe|&lt;|&gt;/i.test(_e607);
         }
       }, {
         key: "getDataTypeLabel",
-        value: function getDataTypeLabel(_e605) {
-          return _e605 === "alphabet" ? "Alphabet" : _e605 === "numeric" ? "Numeric" : _e605 === "alphanumeric" ? "Alphabet and Numeric" : "Email";
+        value: function getDataTypeLabel(_e608) {
+          return _e608 === "alphabet" ? "Alphabet" : _e608 === "numeric" ? "Numeric" : _e608 === "alphanumeric" ? "Alphabet and Numeric" : "Email";
         }
       }, {
         key: "matchesDataType",
-        value: function matchesDataType(_e606, t) {
-          return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(_e606) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(_e606) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(_e606) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(_e606);
+        value: function matchesDataType(_e609, t) {
+          return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(_e609) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(_e609) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(_e609) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(_e609);
         }
       }, {
         key: "getRuleByHeader",
-        value: function getRuleByHeader(_e607, t) {
+        value: function getRuleByHeader(_e610, t) {
           var n = 0;
-          for (n = 0; n < t.length; n += 1) if (t[n].header === _e607) return t[n];
+          for (n = 0; n < t.length; n += 1) if (t[n].header === _e610) return t[n];
           return null;
         }
       }, {
         key: "clearComponentToEmpty",
-        value: function clearComponentToEmpty(_e608) {
+        value: function clearComponentToEmpty(_e611) {
           var _this248 = this;
           var t;
           if (this._tableValue = null, this.dataValue = (t = this.emptyValue) == null ? null : t, this.isBuilderPreview() || this.triggerChange(), !this._table) return;
-          var n = _e608.length && !this.isReadOnlyMode() ? [this.createBlankRow(_e608)] : [];
+          var n = _e611.length && !this.isReadOnlyMode() ? [this.createBlankRow(_e611)] : [];
           this._isMutatingTable = !0, this._table.setData(n).finally(function () {
             _this248._isMutatingTable = !1;
           });
         }
       }, {
         key: "createInputEditor",
-        value: function createInputEditor(_e609, t, n, r, i) {
+        value: function createInputEditor(_e612, t, n, r, i) {
           var a = document.createElement("input"),
-            o = _e609.getValue() == null ? "" : String(_e609.getValue()),
-            s = String(_e609.getField() || ""),
+            o = _e612.getValue() == null ? "" : String(_e612.getValue()),
+            s = String(_e612.getField() || ""),
             c = this.getRuleByHeader(s, i);
           a.setAttribute("type", "text"), a.value = o, a.style.padding = "4px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
             a.focus();
@@ -15154,32 +15186,37 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "getInitialTableData",
-        value: function getInitialTableData(_e610, t) {
+        value: function getInitialTableData(_e613, t) {
           var _this249 = this;
           var n;
           var r = this.dataValue || this.getValue();
           if (r && Array.isArray(r.rows) && r.rows.length) {
             var _n25 = r.rows.slice(0, this.getMaxRows()).map(function (t) {
-              return _this249.mapRowArrayToObject(t, _e610);
+              return _this249.mapRowArrayToObject(t, _e613);
             });
-            return _n25.length < this.getMaxRows() && !t && _n25.push(this.createBlankRow(_e610)), this._tableValue = r, this.dataValue = r, _n25;
+            return _n25.length < this.getMaxRows() && !t && _n25.push(this.createBlankRow(_e613)), this._tableValue = r, this.dataValue = r, _n25;
           }
-          return this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, !t && _e610.length ? [this.createBlankRow(_e610)] : [];
+          return this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, !t && _e613.length ? [this.createBlankRow(_e613)] : [];
         }
       }, {
         key: "initTableFromConfiguredHeaders",
         value: function initTableFromConfiguredHeaders() {
           var _this250 = this;
-          var _e611 = this.getConfiguredColumnRules(),
-            t = _e611.map(function (_e612) {
-              return _e612.header;
+          var _e614 = this.getConfiguredColumnRules(),
+            t = _e614.map(function (_e615) {
+              return _e615.header;
             });
-          if (!this.refs.tabulatorTarget) return;
+          if (!this.refs.tabulatorTarget || this._isDetached) return;
           if (!t.length) {
             this.showError("Please configure at least one table header in the builder.");
             return;
           }
-          this.hideError(), this._table && (this._table.destroy(), this._table = null);
+          if (this.hideError(), this._table) {
+            try {
+              this._table.destroy();
+            } catch (_e616) {}
+            this._table = null;
+          }
           var n = this.isReadOnlyMode(),
             r = this,
             i = this.getInitialTableData(t, n),
@@ -15188,7 +15225,7 @@ var BCFormioPasteTable = function (e, t) {
                 title: t,
                 field: t,
                 editor: n ? void 0 : function (t, n, i, a) {
-                  return r.createInputEditor(t, n, i, a, _e611);
+                  return r.createInputEditor(t, n, i, a, _e614);
                 }
               };
             });
@@ -15217,27 +15254,27 @@ var BCFormioPasteTable = function (e, t) {
             },
             columns: a
           }), n || (this._table.on("cellEdited", function () {
-            _this250._isMutatingTable || _this250.normalizeTableRows(t);
+            _this250._isMutatingTable || _this250._isDetached || _this250.normalizeTableRows(t);
           }), this._table.on("dataChanged", function () {
-            _this250._isMutatingTable || _this250.syncValueFromTable(t);
+            _this250._isMutatingTable || _this250._isDetached || _this250.syncValueFromTable(t);
           }));
         }
       }, {
         key: "validatePastedRows",
-        value: function validatePastedRows(_e613, t) {
+        value: function validatePastedRows(_e617, t) {
           var n = 0,
             r = 0;
-          for (n = 0; n < _e613.length; n += 1) {
-            var _a4 = _e613[n];
+          for (n = 0; n < _e617.length; n += 1) {
+            var _a4 = _e617[n];
             if (_a4.length > t.length) return {
               isValid: !1,
               message: "The pasted content has more columns than this table allows."
             };
             for (r = 0; r < _a4.length; r += 1) {
               var i;
-              var _e614 = t[r],
+              var _e618 = t[r],
                 _n26 = (i = _a4[r]) == null ? "" : i,
-                _o6 = this.validateCellValue(_n26, _e614, "paste");
+                _o6 = this.validateCellValue(_n26, _e618, "paste");
               if (!_o6.isValid) return _o6;
             }
           }
@@ -15248,39 +15285,39 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "appendRowsFromClipboard",
-        value: function appendRowsFromClipboard(_e615, t) {
+        value: function appendRowsFromClipboard(_e619, t) {
           var _this251 = this;
           if (!this._table) return;
           var n = this.getMaxRows(),
             r = this._table.getData().map(function (t) {
-              return _this251.mapRowObjectToArray(t, _e615);
-            }).filter(function (_e616) {
-              return _e616.some(function (_e617) {
-                return String(_e617).trim() !== "";
+              return _this251.mapRowObjectToArray(t, _e619);
+            }).filter(function (_e620) {
+              return _e620.some(function (_e621) {
+                return String(_e621).trim() !== "";
               });
             }),
             i = t.map(function (t) {
-              return _e615.map(function (_e618, n) {
+              return _e619.map(function (_e622, n) {
                 var r;
                 return (r = t[n]) == null ? "" : r;
               });
             }),
             a = r.concat(i);
           if (a.length > n) {
-            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows.")), this.clearComponentToEmpty(_e615);
+            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows.")), this.clearComponentToEmpty(_e619);
             return;
           }
           var o = a.map(function (t) {
-            return _this251.mapRowArrayToObject(t, _e615);
+            return _this251.mapRowArrayToObject(t, _e619);
           });
-          a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(_e615)), this._isMutatingTable = !0, this._table.setData(o).finally(function () {
-            _this251._isMutatingTable = !1, _this251.syncValueFromTable(_e615);
+          a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(_e619)), this._isMutatingTable = !0, this._table.setData(o).finally(function () {
+            _this251._isMutatingTable = !1, _this251.syncValueFromTable(_e619);
           });
         }
       }, {
         key: "showError",
-        value: function showError(_e619) {
-          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e619, this.refs.errorMsg.style.display = "block");
+        value: function showError(_e623) {
+          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e623, this.refs.errorMsg.style.display = "block");
         }
       }, {
         key: "hideError",
@@ -15294,8 +15331,8 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "setValue",
-        value: function setValue(_e620) {
-          return this._tableValue = _e620, this.dataValue = _e620, !0;
+        value: function setValue(_e624) {
+          return this._tableValue = _e624, this.dataValue = _e624, !0;
         }
       }], [{
         key: "schema",

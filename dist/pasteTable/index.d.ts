@@ -46,6 +46,8 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private _table;
     private _tableValue;
     private _isMutatingTable;
+    private _isDetached;
+    private _initAttemptId;
     static schema(...extend: any[]): any;
     static get builderInfo(): {
         title: string;
@@ -174,6 +176,16 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     render(): string;
     attach(element: HTMLElement): void | Promise<void>;
     detach(): void;
+    /**
+     * Delay Tabulator initialization until the target element is visible/measurable.
+     * This avoids wizard lifecycle races on Next/Previous.
+     */
+    private scheduleSafeInit;
+    /**
+     * The target is considered ready when it exists, is attached,
+     * and has measurable layout.
+     */
+    private isTargetReadyForInit;
     isEmpty(value: PasteTableValue): boolean;
     checkValidity(data: any, dirty: boolean, rowData?: any, options?: any, silentCheck?: boolean): any;
     private getComponentValidationMessage;
@@ -194,10 +206,6 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private getRuleByHeader;
     private clearComponentToEmpty;
     private createInputEditor;
-    /**
-     * Build initial data before Tabulator is constructed.
-     * This avoids lifecycle issues during wizard navigation.
-     */
     private getInitialTableData;
     private initTableFromConfiguredHeaders;
     private handleNativePaste;
@@ -206,9 +214,6 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private showError;
     private hideError;
     getValue(): PasteTableValue;
-    /**
-     * Store only. Do not mutate Tabulator here.
-     */
     setValue(value: PasteTableValue): boolean;
 }
 export {};

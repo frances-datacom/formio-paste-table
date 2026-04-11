@@ -69,6 +69,8 @@ export default class PasteTableComponent
   private _table: Tabulator | null = null;
   private _tableValue: PasteTableValue = null;
   private _isMutatingTable = false;
+  private _isDetached = false;
+  private _initAttemptId = 0;
 
   static schema(...extend: any[]) {
     return (BaseComponent.schema as any)(
@@ -349,6 +351,9 @@ export default class PasteTableComponent
   attach(element: HTMLElement) {
     const attached = super.attach(element);
 
+    this._isDetached = false;
+    this._initAttemptId += 1;
+
     this.loadRefs(element, {
       labelEl: 'single',
       userInfoEl: 'single',
@@ -364,23 +369,77 @@ export default class PasteTableComponent
       );
     }
 
-    this.initTableFromConfiguredHeaders();
+    this.scheduleSafeInit(this._initAttemptId, 0);
 
     return attached;
   }
 
   detach() {
+    this._isDetached = true;
+    this._initAttemptId += 1;
+
     this.refs.tabulatorTarget?.removeEventListener(
       'paste',
       this.handleNativePaste,
     );
 
     if (this._table) {
-      this._table.destroy();
+      try {
+        this._table.destroy();
+      } catch (err) {
+        // Ignore teardown race errors.
+      }
       this._table = null;
     }
 
     return super.detach();
+  }
+
+  /**
+   * Delay Tabulator initialization until the target element is visible/measurable.
+   * This avoids wizard lifecycle races on Next/Previous.
+   */
+  private scheduleSafeInit(attemptId: number, retryCount: number) {
+    const self = this;
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        if (self._isDetached || attemptId !== self._initAttemptId) {
+          return;
+        }
+
+        if (self.isTargetReadyForInit()) {
+          self.initTableFromConfiguredHeaders();
+          return;
+        }
+
+        if (retryCount < 12) {
+          self.scheduleSafeInit(attemptId, retryCount + 1);
+        }
+      });
+    });
+  }
+
+  /**
+   * The target is considered ready when it exists, is attached,
+   * and has measurable layout.
+   */
+  private isTargetReadyForInit(): boolean {
+    const target = this.refs.tabulatorTarget;
+
+    if (!target) {
+      return false;
+    }
+
+    if (!target.isConnected) {
+      return false;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const hasSize = rect.width > 0 || rect.height > 0;
+    const hasParent = !!target.offsetParent || target.closest('body');
+
+    return !!(hasSize && hasParent);
   }
 
   isEmpty(value: PasteTableValue) {
@@ -788,10 +847,6 @@ export default class PasteTableComponent
     return input;
   }
 
-  /**
-   * Build initial data before Tabulator is constructed.
-   * This avoids lifecycle issues during wizard navigation.
-   */
   private getInitialTableData(
     headers: string[],
     isReadOnly: boolean,
@@ -832,7 +887,7 @@ export default class PasteTableComponent
     const rules = this.getConfiguredColumnRules();
     const headers = rules.map((rule) => rule.header);
 
-    if (!this.refs.tabulatorTarget) {
+    if (!this.refs.tabulatorTarget || this._isDetached) {
       return;
     }
 
@@ -846,7 +901,11 @@ export default class PasteTableComponent
     this.hideError();
 
     if (this._table) {
-      this._table.destroy();
+      try {
+        this._table.destroy();
+      } catch (err) {
+        // Ignore.
+      }
       this._table = null;
     }
 
@@ -906,12 +965,12 @@ export default class PasteTableComponent
 
     if (!isReadOnly) {
       this._table.on('cellEdited', () => {
-        if (this._isMutatingTable) return;
+        if (this._isMutatingTable || this._isDetached) return;
         this.normalizeTableRows(headers);
       });
 
       this._table.on('dataChanged', () => {
-        if (this._isMutatingTable) return;
+        if (this._isMutatingTable || this._isDetached) return;
         this.syncValueFromTable(headers);
       });
     }
@@ -1057,9 +1116,6 @@ export default class PasteTableComponent
     return this._tableValue;
   }
 
-  /**
-   * Store only. Do not mutate Tabulator here.
-   */
   setValue(value: PasteTableValue) {
     this._tableValue = value;
     this.dataValue = value;

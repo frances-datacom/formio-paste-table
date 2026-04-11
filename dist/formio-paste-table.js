@@ -10194,7 +10194,7 @@ var An = class extends Q {
 	}
 }, jn = e.components.base, $ = class e extends jn {
 	constructor(...e) {
-		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "handleNativePaste", (e) => {
+		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "_isDetached", !1), i(this, "_initAttemptId", 0), i(this, "handleNativePaste", (e) => {
 			var t;
 			let n = this.getConfiguredColumnRules(), r = n.map((e) => e.header);
 			if (!r.length || !this._table || this.isReadOnlyMode()) return;
@@ -10429,7 +10429,7 @@ var An = class extends Q {
 	}
 	attach(e) {
 		let t = super.attach(e);
-		if (this.loadRefs(e, {
+		if (this._isDetached = !1, this._initAttemptId += 1, this.loadRefs(e, {
 			labelEl: "single",
 			userInfoEl: "single",
 			infoMsg: "single",
@@ -10439,11 +10439,37 @@ var An = class extends Q {
 			var n;
 			(n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste);
 		}
-		return this.initTableFromConfiguredHeaders(), t;
+		return this.scheduleSafeInit(this._initAttemptId, 0), t;
 	}
 	detach() {
 		var e;
-		return (e = this.refs.tabulatorTarget) == null || e.removeEventListener("paste", this.handleNativePaste), this._table && (this._table.destroy(), this._table = null), super.detach();
+		if (this._isDetached = !0, this._initAttemptId += 1, (e = this.refs.tabulatorTarget) == null || e.removeEventListener("paste", this.handleNativePaste), this._table) {
+			try {
+				this._table.destroy();
+			} catch (e) {}
+			this._table = null;
+		}
+		return super.detach();
+	}
+	scheduleSafeInit(e, t) {
+		let n = this;
+		requestAnimationFrame(function() {
+			requestAnimationFrame(function() {
+				if (!(n._isDetached || e !== n._initAttemptId)) {
+					if (n.isTargetReadyForInit()) {
+						n.initTableFromConfiguredHeaders();
+						return;
+					}
+					t < 12 && n.scheduleSafeInit(e, t + 1);
+				}
+			});
+		});
+	}
+	isTargetReadyForInit() {
+		let e = this.refs.tabulatorTarget;
+		if (!e || !e.isConnected) return !1;
+		let t = e.getBoundingClientRect(), n = t.width > 0 || t.height > 0, r = !!e.offsetParent || e.closest("body");
+		return !!(n && r);
 	}
 	isEmpty(e) {
 		return this.getEnteredRowsFromValue(e).filter((e) => this.isCompleteRowArray(e)).length === 0;
@@ -10597,12 +10623,17 @@ var An = class extends Q {
 	}
 	initTableFromConfiguredHeaders() {
 		let e = this.getConfiguredColumnRules(), t = e.map((e) => e.header);
-		if (!this.refs.tabulatorTarget) return;
+		if (!this.refs.tabulatorTarget || this._isDetached) return;
 		if (!t.length) {
 			this.showError("Please configure at least one table header in the builder.");
 			return;
 		}
-		this.hideError(), this._table && (this._table.destroy(), this._table = null);
+		if (this.hideError(), this._table) {
+			try {
+				this._table.destroy();
+			} catch (e) {}
+			this._table = null;
+		}
 		let n = this.isReadOnlyMode(), r = this, i = this.getInitialTableData(t, n), a = t.map((t) => ({
 			title: t,
 			field: t,
@@ -10635,9 +10666,9 @@ var An = class extends Q {
 			},
 			columns: a
 		}), n || (this._table.on("cellEdited", () => {
-			this._isMutatingTable || this.normalizeTableRows(t);
+			this._isMutatingTable || this._isDetached || this.normalizeTableRows(t);
 		}), this._table.on("dataChanged", () => {
-			this._isMutatingTable || this.syncValueFromTable(t);
+			this._isMutatingTable || this._isDetached || this.syncValueFromTable(t);
 		}));
 	}
 	validatePastedRows(e, t) {
