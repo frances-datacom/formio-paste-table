@@ -10510,7 +10510,7 @@ var An = class extends Q {
 	normalizeTableRows(e) {
 		if (!this._table) return;
 		let t = this.getMaxRows(), n = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== "")).slice(0, t), r = n.map((t) => this.mapRowArrayToObject(t, e));
-		n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.replaceData(r).finally(() => {
+		n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(r).finally(() => {
 			this._isMutatingTable = !1, this.syncValueFromTable(e);
 		});
 	}
@@ -10551,7 +10551,7 @@ var An = class extends Q {
 		var t;
 		if (this._tableValue = null, this.dataValue = (t = this.emptyValue) == null ? null : t, this.isBuilderPreview() || this.triggerChange(), !this._table) return;
 		let n = e.length && !this.isReadOnlyMode() ? [this.createBlankRow(e)] : [];
-		this._isMutatingTable = !0, this._table.replaceData(n).finally(() => {
+		this._isMutatingTable = !0, this._table.setData(n).finally(() => {
 			this._isMutatingTable = !1;
 		});
 	}
@@ -10586,30 +10586,38 @@ var An = class extends Q {
 			e.key === "Enter" && u(), e.key === "Escape" && r();
 		}), a;
 	}
+	getInitialTableData(e, t) {
+		var n;
+		let r = this.dataValue || this.getValue();
+		if (r && Array.isArray(r.rows) && r.rows.length) {
+			let n = r.rows.slice(0, this.getMaxRows()).map((t) => this.mapRowArrayToObject(t, e));
+			return n.length < this.getMaxRows() && !t && n.push(this.createBlankRow(e)), this._tableValue = r, this.dataValue = r, n;
+		}
+		return this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, !t && e.length ? [this.createBlankRow(e)] : [];
+	}
 	initTableFromConfiguredHeaders() {
-		var e;
-		let t = this.getConfiguredColumnRules(), n = t.map((e) => e.header);
+		let e = this.getConfiguredColumnRules(), t = e.map((e) => e.header);
 		if (!this.refs.tabulatorTarget) return;
-		if (!n.length) {
+		if (!t.length) {
 			this.showError("Please configure at least one table header in the builder.");
 			return;
 		}
-		this.hideError(), (e = this._table) == null || e.destroy(), this._table = null;
-		let r = this.isReadOnlyMode(), i = !r && n.length ? [this.createBlankRow(n)] : [], a = this, o = n.map((e) => ({
-			title: e,
-			field: e,
-			editor: r ? void 0 : function(e, n, r, i) {
-				return a.createInputEditor(e, n, r, i, t);
+		this.hideError(), this._table && (this._table.destroy(), this._table = null);
+		let n = this.isReadOnlyMode(), r = this, i = this.getInitialTableData(t, n), a = t.map((t) => ({
+			title: t,
+			field: t,
+			editor: n ? void 0 : function(t, n, i, a) {
+				return r.createInputEditor(t, n, i, a, e);
 			}
 		}));
 		this._table = new An(this.refs.tabulatorTarget, {
 			data: i,
 			layout: "fitDataStretch",
 			renderHorizontal: "virtual",
-			selectableRange: r ? !1 : 1,
-			selectableRangeColumns: !r,
-			selectableRangeRows: !r,
-			selectableRangeClearCells: !r,
+			selectableRange: n ? !1 : 1,
+			selectableRangeColumns: !n,
+			selectableRangeRows: !n,
+			selectableRangeClearCells: !n,
 			editTriggerEvent: "dblclick",
 			clipboard: !1,
 			rowHeader: {
@@ -10625,24 +10633,12 @@ var An = class extends Q {
 				resizable: "header",
 				width: 180
 			},
-			columns: o
-		}), r || (this._table.on("cellEdited", () => {
-			this._isMutatingTable || this.normalizeTableRows(n);
+			columns: a
+		}), n || (this._table.on("cellEdited", () => {
+			this._isMutatingTable || this.normalizeTableRows(t);
 		}), this._table.on("dataChanged", () => {
-			this._isMutatingTable || this.syncValueFromTable(n);
+			this._isMutatingTable || this.syncValueFromTable(t);
 		}));
-		let s = this.dataValue || this.getValue();
-		this._table.on("tableBuilt", () => {
-			if (s && Array.isArray(s.rows) && s.rows.length) {
-				let e = s.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, n));
-				e.length < this.getMaxRows() && !r && e.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
-					this._isMutatingTable = !1;
-				});
-			} else {
-				var e;
-				this._tableValue = null, this.dataValue = (e = this.emptyValue) == null ? null : e;
-			}
-		});
 	}
 	validatePastedRows(e, t) {
 		let n = 0, r = 0;
@@ -10674,7 +10670,7 @@ var An = class extends Q {
 			return;
 		}
 		let o = a.map((t) => this.mapRowArrayToObject(t, e));
-		a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.replaceData(o).finally(() => {
+		a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(o).finally(() => {
 			this._isMutatingTable = !1, this.syncValueFromTable(e);
 		});
 	}
@@ -10688,20 +10684,7 @@ var An = class extends Q {
 		return this._tableValue;
 	}
 	setValue(e) {
-		this._tableValue = e, this.dataValue = e;
-		let t = this.getConfiguredColumnRules().map((e) => e.header);
-		if (this._table && t.length) if (e && Array.isArray(e.rows) && e.rows.length) {
-			let n = e.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, t));
-			n.length < this.getMaxRows() && !this.isReadOnlyMode() && n.push(this.createBlankRow(t)), this._isMutatingTable = !0, this._table.replaceData(n).finally(() => {
-				this._isMutatingTable = !1;
-			});
-		} else {
-			let e = !this.isReadOnlyMode() && t.length ? [this.createBlankRow(t)] : [];
-			this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
-				this._isMutatingTable = !1;
-			});
-		}
-		return !0;
+		return this._tableValue = e, this.dataValue = e, !0;
 	}
 };
 e.addComponent("pasteTable", $);

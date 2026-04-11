@@ -163,172 +163,51 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
             }[];
         }[];
     };
-    /**
-     * Detect builder/edit preview mode.
-     */
     private isBuilderPreview;
-    /**
-     * Detect read-only mode.
-     * Used for review screens and any read-only Form.io rendering.
-     */
     private isReadOnlyMode;
-    /**
-     * Return max data rows configured by builder.
-     */
     private getMaxRows;
-    /**
-     * Return configured validation message.
-     */
     private getValidationMessage;
-    /**
-     * Optional builder-provided user information shown under label.
-     */
     private getUserInformation;
-    /**
-     * Standard helper text shown above table.
-     */
     private getInfoMessage;
-    /**
-     * Normalize column rules from builder settings.
-     */
     private getConfiguredColumnRules;
-    /**
-     * Check if a provided value is a supported data type.
-     */
     private isValidDataType;
-    /**
-     * Render label + optional user info + helper text + error + table target.
-     */
     render(): string;
-    /**
-     * Attach refs, listeners and initialize grid.
-     */
     attach(element: HTMLElement): void | Promise<void>;
-    /**
-     * Cleanup listeners and table instance.
-     */
     detach(): void;
-    /**
-     * Form.io empty-state check.
-     */
     isEmpty(value: PasteTableValue): boolean;
-    /**
-     * Hook into Form.io validation lifecycle.
-     */
     checkValidity(data: any, dirty: boolean, rowData?: any, options?: any, silentCheck?: boolean): any;
-    /**
-     * Component-specific validation message.
-     */
     private getComponentValidationMessage;
-    /**
-     * Extract entered rows from current stored value.
-     */
     private getEnteredRowsFromValue;
-    /**
-     * True when every cell in row has a non-empty value.
-     */
     private isCompleteRowArray;
-    /**
-     * True when row has some values but not all.
-     */
     private isPartiallyFilledRowArray;
-    /**
-     * Create one blank row object aligned to headers.
-     */
     private createBlankRow;
-    /**
-     * Parse clipboard text into 2D row array.
-     */
     private parseClipboard;
-    /**
-     * Normalize table row object into string array aligned to headers.
-     */
     private mapRowObjectToArray;
-    /**
-     * Normalize row array into object aligned to headers.
-     */
     private mapRowArrayToObject;
-    /**
-     * Internal setter to avoid unnecessary change firing in builder preview.
-     */
     private setStoredValue;
-    /**
-     * Persist current table rows into submission shape.
-     * If table has no entered rows, component becomes emptyValue.
-     */
     private syncValueFromTable;
-    /**
-     * Ensure table keeps only entered rows, respects max rows,
-     * and adds one blank row at bottom while space remains.
-     */
     private normalizeTableRows;
-    /**
-     * Validate a single cell value against suspicious content, length and data type.
-     * Empty values are allowed here and handled later by required/incomplete-row validation.
-     */
     private validateCellValue;
-    /**
-     * Basic unsafe-content detection for plain-text cell input.
-     * This is a practical first-pass rejection, not full OWASP coverage.
-     */
     private containsUnsafePattern;
-    /**
-     * Human-readable data type label.
-     */
     private getDataTypeLabel;
-    /**
-     * Data type matcher.
-     */
     private matchesDataType;
-    /**
-     * Find column rule by header field.
-     */
     private getRuleByHeader;
-    /**
-     * Hard reset the component to true empty state.
-     * - clears table
-     * - resets dataValue to Form.io emptyValue
-     * - keeps one blank row for UX
-     */
     private clearComponentToEmpty;
-    /**
-     * Custom input editor used for runtime editing.
-     * Invalid manual edits are rejected and the whole component is cleared.
-     */
     private createInputEditor;
     /**
-     * Initialize Tabulator from configured headers.
+     * Build initial data before Tabulator is constructed.
+     * This avoids lifecycle issues during wizard navigation.
      */
+    private getInitialTableData;
     private initTableFromConfiguredHeaders;
-    /**
-     * Handle paste into table area.
-     * Entire paste is rejected if any row/column/value fails validation.
-     */
     private handleNativePaste;
-    /**
-     * Validate all pasted rows before accepting any value.
-     * Rejects extra columns and any invalid cell.
-     */
     private validatePastedRows;
-    /**
-     * Append pasted rows after validation succeeds.
-     */
     private appendRowsFromClipboard;
-    /**
-     * Show component-level message.
-     */
     private showError;
-    /**
-     * Hide component-level message.
-     */
     private hideError;
-    /**
-     * Return current stored value.
-     */
     getValue(): PasteTableValue;
     /**
-     * Public setter used by Form.io.
-     * Rehydrates Tabulator when a saved value is pushed back into the component.
+     * Store only. Do not mutate Tabulator here.
      */
     setValue(value: PasteTableValue): boolean;
 }

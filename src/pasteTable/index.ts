@@ -221,9 +221,6 @@ export default class PasteTableComponent
     };
   }
 
-  /**
-   * Detect builder/edit preview mode.
-   */
   private isBuilderPreview(): boolean {
     return !!(
       (this as any).builderMode ||
@@ -231,10 +228,6 @@ export default class PasteTableComponent
     );
   }
 
-  /**
-   * Detect read-only mode.
-   * Used for review screens and any read-only Form.io rendering.
-   */
   private isReadOnlyMode(): boolean {
     return !!(
       this.isBuilderPreview() ||
@@ -243,9 +236,6 @@ export default class PasteTableComponent
     );
   }
 
-  /**
-   * Return max data rows configured by builder.
-   */
   private getMaxRows(): number {
     const raw = Number(this.component.maxRows);
     if (!raw || raw < 1) {
@@ -254,9 +244,6 @@ export default class PasteTableComponent
     return Math.floor(raw);
   }
 
-  /**
-   * Return configured validation message.
-   */
   private getValidationMessage(): string {
     const msg = this.component.customMessage;
     if (msg && String(msg).trim()) {
@@ -266,24 +253,15 @@ export default class PasteTableComponent
     return 'Please add at least one complete row and do not leave incomplete rows in the table.';
   }
 
-  /**
-   * Optional builder-provided user information shown under label.
-   */
   private getUserInformation(): string {
     const info = this.component.userInformation;
     return info && String(info).trim() ? String(info).trim() : '';
   }
 
-  /**
-   * Standard helper text shown above table.
-   */
   private getInfoMessage(): string {
     return `Paste spreadsheet rows directly into the table below. The copied first row will be treated as headers and skipped automatically. Maximum allowed data rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
   }
 
-  /**
-   * Normalize column rules from builder settings.
-   */
   private getConfiguredColumnRules(): PasteTableColumnRule[] {
     return (this.component.tableHeaders || [])
       .map((item) => {
@@ -323,9 +301,6 @@ export default class PasteTableComponent
       .filter(Boolean) as PasteTableColumnRule[];
   }
 
-  /**
-   * Check if a provided value is a supported data type.
-   */
   private isValidDataType(value: any): value is PasteTableDataType {
     return (
       value === 'alphabet' ||
@@ -335,9 +310,6 @@ export default class PasteTableComponent
     );
   }
 
-  /**
-   * Render label + optional user info + helper text + error + table target.
-   */
   render() {
     const labelText = this.component.label ? String(this.component.label) : '';
     const isRequired = !!(
@@ -374,9 +346,6 @@ export default class PasteTableComponent
     `);
   }
 
-  /**
-   * Attach refs, listeners and initialize grid.
-   */
   attach(element: HTMLElement) {
     const attached = super.attach(element);
 
@@ -400,9 +369,6 @@ export default class PasteTableComponent
     return attached;
   }
 
-  /**
-   * Cleanup listeners and table instance.
-   */
   detach() {
     this.refs.tabulatorTarget?.removeEventListener(
       'paste',
@@ -417,9 +383,6 @@ export default class PasteTableComponent
     return super.detach();
   }
 
-  /**
-   * Form.io empty-state check.
-   */
   isEmpty(value: PasteTableValue) {
     const enteredRows = this.getEnteredRowsFromValue(value);
     const completeRows = enteredRows.filter((row) =>
@@ -429,9 +392,6 @@ export default class PasteTableComponent
     return completeRows.length === 0;
   }
 
-  /**
-   * Hook into Form.io validation lifecycle.
-   */
   checkValidity(
     data: any,
     dirty: boolean,
@@ -466,9 +426,6 @@ export default class PasteTableComponent
     return superValid && !message;
   }
 
-  /**
-   * Component-specific validation message.
-   */
   private getComponentValidationMessage(value: PasteTableValue): string {
     const required = !!(
       this.component.validate && this.component.validate.required
@@ -493,9 +450,6 @@ export default class PasteTableComponent
     return '';
   }
 
-  /**
-   * Extract entered rows from current stored value.
-   */
   private getEnteredRowsFromValue(value: PasteTableValue): string[][] {
     if (!value || !Array.isArray(value.rows)) {
       return [];
@@ -511,9 +465,6 @@ export default class PasteTableComponent
       .filter((row) => row.some((cell) => String(cell).trim() !== ''));
   }
 
-  /**
-   * True when every cell in row has a non-empty value.
-   */
   private isCompleteRowArray(row: string[]): boolean {
     if (!row.length) return false;
 
@@ -527,9 +478,6 @@ export default class PasteTableComponent
     return true;
   }
 
-  /**
-   * True when row has some values but not all.
-   */
   private isPartiallyFilledRowArray(row: string[]): boolean {
     const hasAny = row.some((cell) => String(cell || '').trim() !== '');
     const hasAnyEmpty = row.some((cell) => String(cell || '').trim() === '');
@@ -537,9 +485,6 @@ export default class PasteTableComponent
     return hasAny && hasAnyEmpty;
   }
 
-  /**
-   * Create one blank row object aligned to headers.
-   */
   private createBlankRow(headers: string[]): Record<string, string> {
     const row: Record<string, string> = {};
 
@@ -550,9 +495,6 @@ export default class PasteTableComponent
     return row;
   }
 
-  /**
-   * Parse clipboard text into 2D row array.
-   */
   private parseClipboard(text: string): string[][] {
     return text
       .replace(/\r\n/g, '\n')
@@ -562,9 +504,6 @@ export default class PasteTableComponent
       .map((line) => line.split('\t').map((cell) => cell.trim()));
   }
 
-  /**
-   * Normalize table row object into string array aligned to headers.
-   */
   private mapRowObjectToArray(
     rowObj: Record<string, any>,
     headers: string[],
@@ -575,9 +514,6 @@ export default class PasteTableComponent
     });
   }
 
-  /**
-   * Normalize row array into object aligned to headers.
-   */
   private mapRowArrayToObject(
     row: string[],
     headers: string[],
@@ -591,9 +527,6 @@ export default class PasteTableComponent
     return record;
   }
 
-  /**
-   * Internal setter to avoid unnecessary change firing in builder preview.
-   */
   private setStoredValue(value: PasteTableValue, emitChange: boolean) {
     this._tableValue = value;
     this.dataValue = value;
@@ -603,10 +536,6 @@ export default class PasteTableComponent
     }
   }
 
-  /**
-   * Persist current table rows into submission shape.
-   * If table has no entered rows, component becomes emptyValue.
-   */
   private syncValueFromTable(headers: string[]) {
     if (!this._table) return;
 
@@ -636,10 +565,6 @@ export default class PasteTableComponent
     );
   }
 
-  /**
-   * Ensure table keeps only entered rows, respects max rows,
-   * and adds one blank row at bottom while space remains.
-   */
   private normalizeTableRows(headers: string[]) {
     if (!this._table) return;
 
@@ -660,16 +585,12 @@ export default class PasteTableComponent
     }
 
     this._isMutatingTable = true;
-    this._table.replaceData(nextRows).finally(() => {
+    this._table.setData(nextRows).finally(() => {
       this._isMutatingTable = false;
       this.syncValueFromTable(headers);
     });
   }
 
-  /**
-   * Validate a single cell value against suspicious content, length and data type.
-   * Empty values are allowed here and handled later by required/incomplete-row validation.
-   */
   private validateCellValue(
     value: string,
     rule: PasteTableColumnRule,
@@ -714,19 +635,12 @@ export default class PasteTableComponent
     return { isValid: true, message: '' };
   }
 
-  /**
-   * Basic unsafe-content detection for plain-text cell input.
-   * This is a practical first-pass rejection, not full OWASP coverage.
-   */
   private containsUnsafePattern(value: string): boolean {
     return /<|>|javascript:|vbscript:|data:text\/html|on\w+\s*=|<script|<img|<svg|<iframe|&lt;|&gt;/i.test(
       value,
     );
   }
 
-  /**
-   * Human-readable data type label.
-   */
   private getDataTypeLabel(dataType: PasteTableDataType): string {
     if (dataType === 'alphabet') return 'Alphabet';
     if (dataType === 'numeric') return 'Numeric';
@@ -734,9 +648,6 @@ export default class PasteTableComponent
     return 'Email';
   }
 
-  /**
-   * Data type matcher.
-   */
   private matchesDataType(
     value: string,
     dataType: PasteTableDataType,
@@ -761,9 +672,6 @@ export default class PasteTableComponent
     return emailRegex.test(value);
   }
 
-  /**
-   * Find column rule by header field.
-   */
   private getRuleByHeader(
     header: string,
     rules: PasteTableColumnRule[],
@@ -779,12 +687,6 @@ export default class PasteTableComponent
     return null;
   }
 
-  /**
-   * Hard reset the component to true empty state.
-   * - clears table
-   * - resets dataValue to Form.io emptyValue
-   * - keeps one blank row for UX
-   */
   private clearComponentToEmpty(headers: string[]) {
     this._tableValue = null;
     this.dataValue = (this as any).emptyValue ?? null;
@@ -803,15 +705,11 @@ export default class PasteTableComponent
         : [];
 
     this._isMutatingTable = true;
-    this._table.replaceData(blankRows).finally(() => {
+    this._table.setData(blankRows).finally(() => {
       this._isMutatingTable = false;
     });
   }
 
-  /**
-   * Custom input editor used for runtime editing.
-   * Invalid manual edits are rejected and the whole component is cleared.
-   */
   private createInputEditor(
     cell: any,
     onRendered: any,
@@ -891,8 +789,45 @@ export default class PasteTableComponent
   }
 
   /**
-   * Initialize Tabulator from configured headers.
+   * Build initial data before Tabulator is constructed.
+   * This avoids lifecycle issues during wizard navigation.
    */
+  private getInitialTableData(
+    headers: string[],
+    isReadOnly: boolean,
+  ): Record<string, string>[] {
+    const existingValue =
+      (this.dataValue as PasteTableValue) || this.getValue();
+
+    if (
+      existingValue &&
+      Array.isArray(existingValue.rows) &&
+      existingValue.rows.length
+    ) {
+      const seededRows = existingValue.rows
+        .slice(0, this.getMaxRows())
+        .map((row) => this.mapRowArrayToObject(row, headers));
+
+      if (seededRows.length < this.getMaxRows() && !isReadOnly) {
+        seededRows.push(this.createBlankRow(headers));
+      }
+
+      this._tableValue = existingValue;
+      this.dataValue = existingValue;
+
+      return seededRows;
+    }
+
+    this._tableValue = null;
+    this.dataValue = (this as any).emptyValue ?? null;
+
+    if (!isReadOnly && headers.length) {
+      return [this.createBlankRow(headers)];
+    }
+
+    return [];
+  }
+
   private initTableFromConfiguredHeaders() {
     const rules = this.getConfiguredColumnRules();
     const headers = rules.map((rule) => rule.header);
@@ -910,13 +845,14 @@ export default class PasteTableComponent
 
     this.hideError();
 
-    this._table?.destroy();
-    this._table = null;
+    if (this._table) {
+      this._table.destroy();
+      this._table = null;
+    }
 
     const isReadOnly = this.isReadOnlyMode();
-    const initialRows =
-      !isReadOnly && headers.length ? [this.createBlankRow(headers)] : [];
     const self = this;
+    const initialData = this.getInitialTableData(headers, isReadOnly);
 
     const columns: any[] = headers.map((header) => {
       return {
@@ -937,7 +873,7 @@ export default class PasteTableComponent
     });
 
     this._table = new Tabulator(this.refs.tabulatorTarget, {
-      data: initialRows,
+      data: initialData,
       layout: 'fitDataStretch',
       renderHorizontal: 'virtual',
 
@@ -979,42 +915,8 @@ export default class PasteTableComponent
         this.syncValueFromTable(headers);
       });
     }
-
-    const existingValue =
-      (this.dataValue as PasteTableValue) || this.getValue();
-
-    this._table.on('tableBuilt', () => {
-      if (
-        existingValue &&
-        Array.isArray(existingValue.rows) &&
-        existingValue.rows.length
-      ) {
-        const seededRows = existingValue.rows
-          .slice(0, this.getMaxRows())
-          .map((row) => this.mapRowArrayToObject(row, headers));
-
-        if (seededRows.length < this.getMaxRows() && !isReadOnly) {
-          seededRows.push(this.createBlankRow(headers));
-        }
-
-        this._tableValue = existingValue;
-        this.dataValue = existingValue;
-
-        this._isMutatingTable = true;
-        this._table!.replaceData(seededRows).finally(() => {
-          this._isMutatingTable = false;
-        });
-      } else {
-        this._tableValue = null;
-        this.dataValue = (this as any).emptyValue ?? null;
-      }
-    });
   }
 
-  /**
-   * Handle paste into table area.
-   * Entire paste is rejected if any row/column/value fails validation.
-   */
   private handleNativePaste = (e: ClipboardEvent) => {
     const rules = this.getConfiguredColumnRules();
     const headers = rules.map((rule) => rule.header);
@@ -1068,10 +970,6 @@ export default class PasteTableComponent
     this.appendRowsFromClipboard(headers, dataRows);
   };
 
-  /**
-   * Validate all pasted rows before accepting any value.
-   * Rejects extra columns and any invalid cell.
-   */
   private validatePastedRows(
     dataRows: string[][],
     rules: PasteTableColumnRule[],
@@ -1104,9 +1002,6 @@ export default class PasteTableComponent
     return { isValid: true, message: '' };
   }
 
-  /**
-   * Append pasted rows after validation succeeds.
-   */
   private appendRowsFromClipboard(headers: string[], dataRows: string[][]) {
     if (!this._table) return;
 
@@ -1140,75 +1035,34 @@ export default class PasteTableComponent
     }
 
     this._isMutatingTable = true;
-    this._table.replaceData(nextRows).finally(() => {
+    this._table.setData(nextRows).finally(() => {
       this._isMutatingTable = false;
       this.syncValueFromTable(headers);
     });
   }
 
-  /**
-   * Show component-level message.
-   */
   private showError(msg: string) {
     if (!this.refs.errorMsg) return;
     this.refs.errorMsg.textContent = msg;
     this.refs.errorMsg.style.display = 'block';
   }
 
-  /**
-   * Hide component-level message.
-   */
   private hideError() {
     if (!this.refs.errorMsg) return;
     this.refs.errorMsg.textContent = '';
     this.refs.errorMsg.style.display = 'none';
   }
 
-  /**
-   * Return current stored value.
-   */
   getValue(): PasteTableValue {
     return this._tableValue;
   }
 
   /**
-   * Public setter used by Form.io.
-   * Rehydrates Tabulator when a saved value is pushed back into the component.
+   * Store only. Do not mutate Tabulator here.
    */
   setValue(value: PasteTableValue) {
     this._tableValue = value;
     this.dataValue = value;
-
-    const rules = this.getConfiguredColumnRules();
-    const headers = rules.map((rule) => rule.header);
-
-    if (this._table && headers.length) {
-      if (value && Array.isArray(value.rows) && value.rows.length) {
-        const seededRows = value.rows
-          .slice(0, this.getMaxRows())
-          .map((row) => this.mapRowArrayToObject(row, headers));
-
-        if (seededRows.length < this.getMaxRows() && !this.isReadOnlyMode()) {
-          seededRows.push(this.createBlankRow(headers));
-        }
-
-        this._isMutatingTable = true;
-        this._table.replaceData(seededRows).finally(() => {
-          this._isMutatingTable = false;
-        });
-      } else {
-        const emptyRows =
-          !this.isReadOnlyMode() && headers.length
-            ? [this.createBlankRow(headers)]
-            : [];
-
-        this._isMutatingTable = true;
-        this._table.replaceData(emptyRows).finally(() => {
-          this._isMutatingTable = false;
-        });
-      }
-    }
-
     return true;
   }
 }
