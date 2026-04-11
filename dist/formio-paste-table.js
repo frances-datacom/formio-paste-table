@@ -10197,27 +10197,27 @@ var An = class extends Q {
 		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "handleNativePaste", (e) => {
 			var t;
 			let n = this.getConfiguredColumnRules(), r = n.map((e) => e.header);
-			if (!r.length || !this._table || this.isBuilderPreview()) return;
+			if (!r.length || !this._table || this.isReadOnlyMode()) return;
 			let i = ((t = e.clipboardData) == null ? void 0 : t.getData("text")) || "";
 			if (!i) return;
 			e.preventDefault();
 			let a = this.parseClipboard(i);
 			if (!a.length || a.length === 1) {
-				this.showError("Please copy at least one header row and one data row.");
+				this.showError("Please copy at least one header row and one data row."), this.clearComponentToEmpty(r);
 				return;
 			}
 			let o = a.slice(1);
 			if (!o.length) {
-				this.showError("Only a header row was pasted. Please copy data rows as well.");
+				this.showError("Only a header row was pasted. Please copy data rows as well."), this.clearComponentToEmpty(r);
 				return;
 			}
 			if (o.length > this.getMaxRows()) {
-				this.showError(`The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`);
+				this.showError(`The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`), this.clearComponentToEmpty(r);
 				return;
 			}
 			let s = this.validatePastedRows(o, n);
 			if (!s.isValid) {
-				this.showError(s.message);
+				this.showError(s.message), this.clearComponentToEmpty(r);
 				return;
 			}
 			this.hideError(), this.appendRowsFromClipboard(r, o);
@@ -10365,6 +10365,9 @@ var An = class extends Q {
 	isBuilderPreview() {
 		return !!(this.builderMode || this.options && this.options.builder);
 	}
+	isReadOnlyMode() {
+		return !!(this.isBuilderPreview() || this.options && this.options.readOnly || this.component && this.component.disabled);
+	}
 	getMaxRows() {
 		let e = Number(this.component.maxRows);
 		return !e || e < 1 ? 10 : Math.floor(e);
@@ -10432,7 +10435,7 @@ var An = class extends Q {
 			infoMsg: "single",
 			errorMsg: "single",
 			tabulatorTarget: "single"
-		}), !this.isBuilderPreview()) {
+		}), !this.isReadOnlyMode()) {
 			var n;
 			(n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste);
 		}
@@ -10494,6 +10497,11 @@ var An = class extends Q {
 	syncValueFromTable(e) {
 		if (!this._table) return;
 		let t = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== ""));
+		if (!t.length) {
+			var n;
+			this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, this.isBuilderPreview() || this.triggerChange();
+			return;
+		}
 		this.setStoredValue({
 			headers: e,
 			rows: t
@@ -10502,7 +10510,7 @@ var An = class extends Q {
 	normalizeTableRows(e) {
 		if (!this._table) return;
 		let t = this.getMaxRows(), n = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== "")).slice(0, t), r = n.map((t) => this.mapRowArrayToObject(t, e));
-		n.length < t && r.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(r).finally(() => {
+		n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.replaceData(r).finally(() => {
 			this._isMutatingTable = !1, this.syncValueFromTable(e);
 		});
 	}
@@ -10532,12 +10540,20 @@ var An = class extends Q {
 		return e === "alphabet" ? "Alphabet" : e === "numeric" ? "Numeric" : e === "alphanumeric" ? "Alphabet and Numeric" : "Email";
 	}
 	matchesDataType(e, t) {
-		return t === "alphabet" ? /^[A-Za-z\s'-]+$/.test(e) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(e) : t === "alphanumeric" ? /^[A-Za-z0-9\s'-]+$/.test(e) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(e);
+		return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(e) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(e) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(e) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(e);
 	}
 	getRuleByHeader(e, t) {
 		let n = 0;
 		for (n = 0; n < t.length; n += 1) if (t[n].header === e) return t[n];
 		return null;
+	}
+	clearComponentToEmpty(e) {
+		var t;
+		if (this._tableValue = null, this.dataValue = (t = this.emptyValue) == null ? null : t, this.isBuilderPreview() || this.triggerChange(), !this._table) return;
+		let n = e.length && !this.isReadOnlyMode() ? [this.createBlankRow(e)] : [];
+		this._isMutatingTable = !0, this._table.replaceData(n).finally(() => {
+			this._isMutatingTable = !1;
+		});
 	}
 	createInputEditor(e, t, n, r, i) {
 		let a = document.createElement("input"), o = e.getValue() == null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
@@ -10558,7 +10574,9 @@ var An = class extends Q {
 			if (c) {
 				let t = l.validateCellValue(e, c, "manual");
 				if (!t.isValid) {
-					l.showError(t.message), r();
+					l.showError(t.message), l.clearComponentToEmpty(i.map(function(e) {
+						return e.header;
+					})), r();
 					return;
 				}
 			}
@@ -10577,7 +10595,7 @@ var An = class extends Q {
 			return;
 		}
 		this.hideError(), (e = this._table) == null || e.destroy(), this._table = null;
-		let r = this.isBuilderPreview(), i = [this.createBlankRow(n)], a = this, o = n.map((e) => ({
+		let r = this.isReadOnlyMode(), i = !r && n.length ? [this.createBlankRow(n)] : [], a = this, o = n.map((e) => ({
 			title: e,
 			field: e,
 			editor: r ? void 0 : function(e, n, r, i) {
@@ -10593,15 +10611,7 @@ var An = class extends Q {
 			selectableRangeRows: !r,
 			selectableRangeClearCells: !r,
 			editTriggerEvent: "dblclick",
-			clipboard: !r,
-			clipboardCopyStyled: !1,
-			clipboardCopyConfig: {
-				rowHeaders: !1,
-				columnHeaders: !1
-			},
-			clipboardCopyRowRange: "range",
-			clipboardPasteParser: "range",
-			clipboardPasteAction: "range",
+			clipboard: !1,
 			rowHeader: {
 				resizable: !1,
 				frozen: !0,
@@ -10617,20 +10627,20 @@ var An = class extends Q {
 			},
 			columns: o
 		}), r || (this._table.on("cellEdited", () => {
-			this._isMutatingTable || (this.hideError(), this.normalizeTableRows(n));
+			this._isMutatingTable || this.normalizeTableRows(n);
 		}), this._table.on("dataChanged", () => {
 			this._isMutatingTable || this.syncValueFromTable(n);
 		}));
-		let s = this.getValue();
+		let s = this.dataValue || this.getValue();
 		if (s && Array.isArray(s.rows) && s.rows.length) {
 			let e = s.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, n));
-			e.length < this.getMaxRows() && e.push(this.createBlankRow(n)), this._isMutatingTable = !0, this._table.setData(e).finally(() => {
-				this._isMutatingTable = !1, this.syncValueFromTable(n);
+			e.length < this.getMaxRows() && !r && e.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
+				this._isMutatingTable = !1;
 			});
-		} else this.setStoredValue({
-			headers: n,
-			rows: []
-		}, !1);
+		} else {
+			var c;
+			this._tableValue = null, this.dataValue = (c = this.emptyValue) == null ? null : c;
+		}
 	}
 	validatePastedRows(e, t) {
 		let n = 0, r = 0;
@@ -10658,11 +10668,11 @@ var An = class extends Q {
 			return (r = t[n]) == null ? "" : r;
 		})), a = r.concat(i);
 		if (a.length > n) {
-			this.showError(`The pasted content exceeds the maximum allowed ${n} data rows.`);
+			this.showError(`The pasted content exceeds the maximum allowed ${n} data rows.`), this.clearComponentToEmpty(e);
 			return;
 		}
 		let o = a.map((t) => this.mapRowArrayToObject(t, e));
-		a.length < n && o.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(o).finally(() => {
+		a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.replaceData(o).finally(() => {
 			this._isMutatingTable = !1, this.syncValueFromTable(e);
 		});
 	}
@@ -10676,7 +10686,20 @@ var An = class extends Q {
 		return this._tableValue;
 	}
 	setValue(e) {
-		return this.setStoredValue(e, !0), !0;
+		this._tableValue = e, this.dataValue = e;
+		let t = this.getConfiguredColumnRules().map((e) => e.header);
+		if (this._table && t.length) if (e && Array.isArray(e.rows) && e.rows.length) {
+			let n = e.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, t));
+			n.length < this.getMaxRows() && !this.isReadOnlyMode() && n.push(this.createBlankRow(t)), this._isMutatingTable = !0, this._table.replaceData(n).finally(() => {
+				this._isMutatingTable = !1;
+			});
+		} else {
+			let e = !this.isReadOnlyMode() && t.length ? [this.createBlankRow(t)] : [];
+			this._isMutatingTable = !0, this._table.replaceData(e).finally(() => {
+				this._isMutatingTable = !1;
+			});
+		}
+		return !0;
 	}
 };
 e.addComponent("pasteTable", $);

@@ -27,6 +27,7 @@ type PasteTableSchema = {
         required?: boolean;
         [key: string]: any;
     };
+    disabled?: boolean;
     [key: string]: any;
 };
 interface BaseComponentInstance {
@@ -164,9 +165,13 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     };
     /**
      * Detect builder/edit preview mode.
-     * In this mode the grid remains read-only and does not emit runtime change behavior.
      */
     private isBuilderPreview;
+    /**
+     * Detect read-only mode.
+     * Used for review screens and any read-only Form.io rendering.
+     */
+    private isReadOnlyMode;
     /**
      * Return max data rows configured by builder.
      */
@@ -187,9 +192,6 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
      * Normalize column rules from builder settings.
      */
     private getConfiguredColumnRules;
-    /**
-     * Return header titles only for submission payload.
-     */
     /**
      * Check if a provided value is a supported data type.
      */
@@ -252,6 +254,7 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private setStoredValue;
     /**
      * Persist current table rows into submission shape.
+     * If table has no entered rows, component becomes emptyValue.
      */
     private syncValueFromTable;
     /**
@@ -282,8 +285,15 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
      */
     private getRuleByHeader;
     /**
+     * Hard reset the component to true empty state.
+     * - clears table
+     * - resets dataValue to Form.io emptyValue
+     * - keeps one blank row for UX
+     */
+    private clearComponentToEmpty;
+    /**
      * Custom input editor used for runtime editing.
-     * Invalid manual edits are rejected and previous value is restored.
+     * Invalid manual edits are rejected and the whole component is cleared.
      */
     private createInputEditor;
     /**
@@ -318,6 +328,7 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     getValue(): PasteTableValue;
     /**
      * Public setter used by Form.io.
+     * Rehydrates Tabulator when a saved value is pushed back into the component.
      */
     setValue(value: PasteTableValue): boolean;
 }

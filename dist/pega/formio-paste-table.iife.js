@@ -5,7 +5,7 @@ function _toConsumableArray(r) { return _arrayWithoutHoles(r) || _iterableToArra
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _iterableToArray(r) { if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r); }
 function _arrayWithoutHoles(r) { if (Array.isArray(r)) return _arrayLikeToArray(r); }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n26 = 0, F = function F() {}; return { s: F, n: function n() { return _n26 >= r.length ? { done: !0 } : { done: !1, value: r[_n26++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n27 = 0, F = function F() {}; return { s: F, n: function n() { return _n27 >= r.length ? { done: !0 } : { done: !1, value: r[_n27++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
 function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
@@ -14796,27 +14796,27 @@ var BCFormioPasteTable = function (e, t) {
             r = n.map(function (_e563) {
               return _e563.header;
             });
-          if (!r.length || !_this242._table || _this242.isBuilderPreview()) return;
+          if (!r.length || !_this242._table || _this242.isReadOnlyMode()) return;
           var i = ((t = _e562.clipboardData) == null ? void 0 : t.getData("text")) || "";
           if (!i) return;
           _e562.preventDefault();
           var a = _this242.parseClipboard(i);
           if (!a.length || a.length === 1) {
-            _this242.showError("Please copy at least one header row and one data row.");
+            _this242.showError("Please copy at least one header row and one data row."), _this242.clearComponentToEmpty(r);
             return;
           }
           var o = a.slice(1);
           if (!o.length) {
-            _this242.showError("Only a header row was pasted. Please copy data rows as well.");
+            _this242.showError("Only a header row was pasted. Please copy data rows as well."), _this242.clearComponentToEmpty(r);
             return;
           }
           if (o.length > _this242.getMaxRows()) {
-            _this242.showError("The pasted content exceeds the maximum allowed ".concat(_this242.getMaxRows(), " data rows."));
+            _this242.showError("The pasted content exceeds the maximum allowed ".concat(_this242.getMaxRows(), " data rows.")), _this242.clearComponentToEmpty(r);
             return;
           }
           var s = _this242.validatePastedRows(o, n);
           if (!s.isValid) {
-            _this242.showError(s.message);
+            _this242.showError(s.message), _this242.clearComponentToEmpty(r);
             return;
           }
           _this242.hideError(), _this242.appendRowsFromClipboard(r, o);
@@ -14828,6 +14828,11 @@ var BCFormioPasteTable = function (e, t) {
         key: "isBuilderPreview",
         value: function isBuilderPreview() {
           return !!(this.builderMode || this.options && this.options.builder);
+        }
+      }, {
+        key: "isReadOnlyMode",
+        value: function isReadOnlyMode() {
+          return !!(this.isBuilderPreview() || this.options && this.options.readOnly || this.component && this.component.disabled);
         }
       }, {
         key: "getMaxRows",
@@ -14900,7 +14905,7 @@ var BCFormioPasteTable = function (e, t) {
             infoMsg: "single",
             errorMsg: "single",
             tabulatorTarget: "single"
-          }), !this.isBuilderPreview()) {
+          }), !this.isReadOnlyMode()) {
             var n;
             (n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste);
           }
@@ -15027,6 +15032,11 @@ var BCFormioPasteTable = function (e, t) {
               return String(_e599).trim() !== "";
             });
           });
+          if (!t.length) {
+            var n;
+            this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, this.isBuilderPreview() || this.triggerChange();
+            return;
+          }
           this.setStoredValue({
             headers: _e597,
             rows: t
@@ -15048,7 +15058,7 @@ var BCFormioPasteTable = function (e, t) {
             r = n.map(function (t) {
               return _this247.mapRowArrayToObject(t, _e600);
             });
-          n.length < t && r.push(this.createBlankRow(_e600)), this._isMutatingTable = !0, this._table.setData(r).finally(function () {
+          n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(_e600)), this._isMutatingTable = !0, this._table.replaceData(r).finally(function () {
             _this247._isMutatingTable = !1, _this247.syncValueFromTable(_e600);
           });
         }
@@ -15086,7 +15096,7 @@ var BCFormioPasteTable = function (e, t) {
       }, {
         key: "matchesDataType",
         value: function matchesDataType(_e606, t) {
-          return t === "alphabet" ? /^[A-Za-z\s'-]+$/.test(_e606) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(_e606) : t === "alphanumeric" ? /^[A-Za-z0-9\s'-]+$/.test(_e606) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(_e606);
+          return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(_e606) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(_e606) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(_e606) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(_e606);
         }
       }, {
         key: "getRuleByHeader",
@@ -15096,11 +15106,22 @@ var BCFormioPasteTable = function (e, t) {
           return null;
         }
       }, {
+        key: "clearComponentToEmpty",
+        value: function clearComponentToEmpty(_e608) {
+          var _this248 = this;
+          var t;
+          if (this._tableValue = null, this.dataValue = (t = this.emptyValue) == null ? null : t, this.isBuilderPreview() || this.triggerChange(), !this._table) return;
+          var n = _e608.length && !this.isReadOnlyMode() ? [this.createBlankRow(_e608)] : [];
+          this._isMutatingTable = !0, this._table.replaceData(n).finally(function () {
+            _this248._isMutatingTable = !1;
+          });
+        }
+      }, {
         key: "createInputEditor",
-        value: function createInputEditor(_e608, t, n, r, i) {
+        value: function createInputEditor(_e609, t, n, r, i) {
           var a = document.createElement("input"),
-            o = _e608.getValue() == null ? "" : String(_e608.getValue()),
-            s = String(_e608.getField() || ""),
+            o = _e609.getValue() == null ? "" : String(_e609.getValue()),
+            s = String(_e609.getField() || ""),
             c = this.getRuleByHeader(s, i);
           a.setAttribute("type", "text"), a.value = o, a.style.padding = "4px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
             a.focus();
@@ -15119,7 +15140,9 @@ var BCFormioPasteTable = function (e, t) {
             if (c) {
               var _t31 = l.validateCellValue(e, c, "manual");
               if (!_t31.isValid) {
-                l.showError(_t31.message), r();
+                l.showError(_t31.message), l.clearComponentToEmpty(i.map(function (e) {
+                  return e.header;
+                })), r();
                 return;
               }
             }
@@ -15132,25 +15155,25 @@ var BCFormioPasteTable = function (e, t) {
       }, {
         key: "initTableFromConfiguredHeaders",
         value: function initTableFromConfiguredHeaders() {
-          var _this248 = this;
-          var _e609;
+          var _this249 = this;
+          var _e610;
           var t = this.getConfiguredColumnRules(),
-            n = t.map(function (_e610) {
-              return _e610.header;
+            n = t.map(function (_e611) {
+              return _e611.header;
             });
           if (!this.refs.tabulatorTarget) return;
           if (!n.length) {
             this.showError("Please configure at least one table header in the builder.");
             return;
           }
-          this.hideError(), (_e609 = this._table) == null || _e609.destroy(), this._table = null;
-          var r = this.isBuilderPreview(),
-            i = [this.createBlankRow(n)],
+          this.hideError(), (_e610 = this._table) == null || _e610.destroy(), this._table = null;
+          var r = this.isReadOnlyMode(),
+            i = !r && n.length ? [this.createBlankRow(n)] : [],
             a = this,
-            o = n.map(function (_e611) {
+            o = n.map(function (_e612) {
               return {
-                title: _e611,
-                field: _e611,
+                title: _e612,
+                field: _e612,
                 editor: r ? void 0 : function (e, n, r, i) {
                   return a.createInputEditor(e, n, r, i, t);
                 }
@@ -15165,15 +15188,7 @@ var BCFormioPasteTable = function (e, t) {
             selectableRangeRows: !r,
             selectableRangeClearCells: !r,
             editTriggerEvent: "dblclick",
-            clipboard: !r,
-            clipboardCopyStyled: !1,
-            clipboardCopyConfig: {
-              rowHeaders: !1,
-              columnHeaders: !1
-            },
-            clipboardCopyRowRange: "range",
-            clipboardPasteParser: "range",
-            clipboardPasteAction: "range",
+            clipboard: !1,
             rowHeader: {
               resizable: !1,
               frozen: !0,
@@ -15189,39 +15204,39 @@ var BCFormioPasteTable = function (e, t) {
             },
             columns: o
           }), r || (this._table.on("cellEdited", function () {
-            _this248._isMutatingTable || (_this248.hideError(), _this248.normalizeTableRows(n));
+            _this249._isMutatingTable || _this249.normalizeTableRows(n);
           }), this._table.on("dataChanged", function () {
-            _this248._isMutatingTable || _this248.syncValueFromTable(n);
+            _this249._isMutatingTable || _this249.syncValueFromTable(n);
           }));
-          var s = this.getValue();
+          var s = this.dataValue || this.getValue();
           if (s && Array.isArray(s.rows) && s.rows.length) {
-            var _e612 = s.rows.slice(0, this.getMaxRows()).map(function (_e613) {
-              return _this248.mapRowArrayToObject(_e613, n);
+            var _e613 = s.rows.slice(0, this.getMaxRows()).map(function (_e614) {
+              return _this249.mapRowArrayToObject(_e614, n);
             });
-            _e612.length < this.getMaxRows() && _e612.push(this.createBlankRow(n)), this._isMutatingTable = !0, this._table.setData(_e612).finally(function () {
-              _this248._isMutatingTable = !1, _this248.syncValueFromTable(n);
+            _e613.length < this.getMaxRows() && !r && _e613.push(this.createBlankRow(n)), this._tableValue = s, this.dataValue = s, this._isMutatingTable = !0, this._table.replaceData(_e613).finally(function () {
+              _this249._isMutatingTable = !1;
             });
-          } else this.setStoredValue({
-            headers: n,
-            rows: []
-          }, !1);
+          } else {
+            var c;
+            this._tableValue = null, this.dataValue = (c = this.emptyValue) == null ? null : c;
+          }
         }
       }, {
         key: "validatePastedRows",
-        value: function validatePastedRows(_e614, t) {
+        value: function validatePastedRows(_e615, t) {
           var n = 0,
             r = 0;
-          for (n = 0; n < _e614.length; n += 1) {
-            var _a4 = _e614[n];
+          for (n = 0; n < _e615.length; n += 1) {
+            var _a4 = _e615[n];
             if (_a4.length > t.length) return {
               isValid: !1,
               message: "The pasted content has more columns than this table allows."
             };
             for (r = 0; r < _a4.length; r += 1) {
               var i;
-              var _e615 = t[r],
+              var _e616 = t[r],
                 _n25 = (i = _a4[r]) == null ? "" : i,
-                _o6 = this.validateCellValue(_n25, _e615, "paste");
+                _o6 = this.validateCellValue(_n25, _e616, "paste");
               if (!_o6.isValid) return _o6;
             }
           }
@@ -15232,39 +15247,39 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "appendRowsFromClipboard",
-        value: function appendRowsFromClipboard(_e616, t) {
-          var _this249 = this;
+        value: function appendRowsFromClipboard(_e617, t) {
+          var _this250 = this;
           if (!this._table) return;
           var n = this.getMaxRows(),
             r = this._table.getData().map(function (t) {
-              return _this249.mapRowObjectToArray(t, _e616);
-            }).filter(function (_e617) {
-              return _e617.some(function (_e618) {
-                return String(_e618).trim() !== "";
+              return _this250.mapRowObjectToArray(t, _e617);
+            }).filter(function (_e618) {
+              return _e618.some(function (_e619) {
+                return String(_e619).trim() !== "";
               });
             }),
             i = t.map(function (t) {
-              return _e616.map(function (_e619, n) {
+              return _e617.map(function (_e620, n) {
                 var r;
                 return (r = t[n]) == null ? "" : r;
               });
             }),
             a = r.concat(i);
           if (a.length > n) {
-            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows."));
+            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows.")), this.clearComponentToEmpty(_e617);
             return;
           }
           var o = a.map(function (t) {
-            return _this249.mapRowArrayToObject(t, _e616);
+            return _this250.mapRowArrayToObject(t, _e617);
           });
-          a.length < n && o.push(this.createBlankRow(_e616)), this._isMutatingTable = !0, this._table.setData(o).finally(function () {
-            _this249._isMutatingTable = !1, _this249.syncValueFromTable(_e616);
+          a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(_e617)), this._isMutatingTable = !0, this._table.replaceData(o).finally(function () {
+            _this250._isMutatingTable = !1, _this250.syncValueFromTable(_e617);
           });
         }
       }, {
         key: "showError",
-        value: function showError(_e620) {
-          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e620, this.refs.errorMsg.style.display = "block");
+        value: function showError(_e621) {
+          this.refs.errorMsg && (this.refs.errorMsg.textContent = _e621, this.refs.errorMsg.style.display = "block");
         }
       }, {
         key: "hideError",
@@ -15278,8 +15293,26 @@ var BCFormioPasteTable = function (e, t) {
         }
       }, {
         key: "setValue",
-        value: function setValue(_e621) {
-          return this.setStoredValue(_e621, !0), !0;
+        value: function setValue(_e622) {
+          var _this251 = this;
+          this._tableValue = _e622, this.dataValue = _e622;
+          var t = this.getConfiguredColumnRules().map(function (_e623) {
+            return _e623.header;
+          });
+          if (this._table && t.length) if (_e622 && Array.isArray(_e622.rows) && _e622.rows.length) {
+            var _n26 = _e622.rows.slice(0, this.getMaxRows()).map(function (_e624) {
+              return _this251.mapRowArrayToObject(_e624, t);
+            });
+            _n26.length < this.getMaxRows() && !this.isReadOnlyMode() && _n26.push(this.createBlankRow(t)), this._isMutatingTable = !0, this._table.replaceData(_n26).finally(function () {
+              _this251._isMutatingTable = !1;
+            });
+          } else {
+            var _e625 = !this.isReadOnlyMode() && t.length ? [this.createBlankRow(t)] : [];
+            this._isMutatingTable = !0, this._table.replaceData(_e625).finally(function () {
+              _this251._isMutatingTable = !1;
+            });
+          }
+          return !0;
         }
       }], [{
         key: "schema",

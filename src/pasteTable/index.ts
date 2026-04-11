@@ -41,6 +41,7 @@ type PasteTableSchema = {
     required?: boolean;
     [key: string]: any;
   };
+  disabled?: boolean;
   [key: string]: any;
 };
 
@@ -222,12 +223,23 @@ export default class PasteTableComponent
 
   /**
    * Detect builder/edit preview mode.
-   * In this mode the grid remains read-only and does not emit runtime change behavior.
    */
   private isBuilderPreview(): boolean {
     return !!(
       (this as any).builderMode ||
       (this.options && this.options.builder)
+    );
+  }
+
+  /**
+   * Detect read-only mode.
+   * Used for review screens and any read-only Form.io rendering.
+   */
+  private isReadOnlyMode(): boolean {
+    return !!(
+      this.isBuilderPreview() ||
+      (this.options && this.options.readOnly) ||
+      (this.component && this.component.disabled)
     );
   }
 
@@ -294,9 +306,6 @@ export default class PasteTableComponent
         const maxChars =
           rawMaxChars && rawMaxChars > 0 ? Math.floor(rawMaxChars) : 20;
 
-        // const dataType = this.isValidDataType(item.dataType)
-        //   ? item.dataType
-        //   : 'alphabet';
         const normalizedDataType = String(item.dataType || '')
           .trim()
           .toLowerCase();
@@ -313,13 +322,6 @@ export default class PasteTableComponent
       })
       .filter(Boolean) as PasteTableColumnRule[];
   }
-
-  /**
-   * Return header titles only for submission payload.
-   */
-  // private getConfiguredHeaders(): string[] {
-  //   return this.getConfiguredColumnRules().map((rule) => rule.header);
-  // }
 
   /**
    * Check if a provided value is a supported data type.
@@ -386,7 +388,7 @@ export default class PasteTableComponent
       tabulatorTarget: 'single',
     });
 
-    if (!this.isBuilderPreview()) {
+    if (!this.isReadOnlyMode()) {
       this.refs.tabulatorTarget?.addEventListener(
         'paste',
         this.handleNativePaste,
@@ -603,6 +605,7 @@ export default class PasteTableComponent
 
   /**
    * Persist current table rows into submission shape.
+   * If table has no entered rows, component becomes emptyValue.
    */
   private syncValueFromTable(headers: string[]) {
     if (!this._table) return;
@@ -612,6 +615,17 @@ export default class PasteTableComponent
     const rows = tableData
       .map((rowObj) => this.mapRowObjectToArray(rowObj, headers))
       .filter((row) => row.some((cell) => String(cell).trim() !== ''));
+
+    if (!rows.length) {
+      this._tableValue = null;
+      this.dataValue = (this as any).emptyValue ?? null;
+
+      if (!this.isBuilderPreview()) {
+        this.triggerChange();
+      }
+
+      return;
+    }
 
     this.setStoredValue(
       {
@@ -641,12 +655,12 @@ export default class PasteTableComponent
       this.mapRowArrayToObject(row, headers),
     );
 
-    if (enteredRows.length < maxRows) {
+    if (enteredRows.length < maxRows && !this.isReadOnlyMode()) {
       nextRows.push(this.createBlankRow(headers));
     }
 
     this._isMutatingTable = true;
-    this._table.setData(nextRows).finally(() => {
+    this._table.replaceData(nextRows).finally(() => {
       this._isMutatingTable = false;
       this.syncValueFromTable(headers);
     });
@@ -727,9 +741,9 @@ export default class PasteTableComponent
     value: string,
     dataType: PasteTableDataType,
   ): boolean {
-    const alphabetRegex = /^[A-Za-z\s'-]+$/;
+    const alphabetRegex = /^[A-Za-z\s'’-]+$/;
     const numericRegex = /^\d+(\.\d{1,2})?$/;
-    const alphaNumericRegex = /^[A-Za-z0-9\s'-]+$/;
+    const alphaNumericRegex = /^[A-Za-z0-9\s'’-]+$/;
     const emailRegex = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 
     if (dataType === 'alphabet') {
@@ -766,8 +780,37 @@ export default class PasteTableComponent
   }
 
   /**
+   * Hard reset the component to true empty state.
+   * - clears table
+   * - resets dataValue to Form.io emptyValue
+   * - keeps one blank row for UX
+   */
+  private clearComponentToEmpty(headers: string[]) {
+    this._tableValue = null;
+    this.dataValue = (this as any).emptyValue ?? null;
+
+    if (!this.isBuilderPreview()) {
+      this.triggerChange();
+    }
+
+    if (!this._table) {
+      return;
+    }
+
+    const blankRows =
+      headers.length && !this.isReadOnlyMode()
+        ? [this.createBlankRow(headers)]
+        : [];
+
+    this._isMutatingTable = true;
+    this._table.replaceData(blankRows).finally(() => {
+      this._isMutatingTable = false;
+    });
+  }
+
+  /**
    * Custom input editor used for runtime editing.
-   * Invalid manual edits are rejected and previous value is restored.
+   * Invalid manual edits are rejected and the whole component is cleared.
    */
   private createInputEditor(
     cell: any,
@@ -818,6 +861,11 @@ export default class PasteTableComponent
 
         if (!validation.isValid) {
           self.showError(validation.message);
+          self.clearComponentToEmpty(
+            rules.map(function (item) {
+              return item.header;
+            }),
+          );
           cancel();
           return;
         }
@@ -865,15 +913,16 @@ export default class PasteTableComponent
     this._table?.destroy();
     this._table = null;
 
-    const isPreview = this.isBuilderPreview();
-    const initialRows = [this.createBlankRow(headers)];
+    const isReadOnly = this.isReadOnlyMode();
+    const initialRows =
+      !isReadOnly && headers.length ? [this.createBlankRow(headers)] : [];
     const self = this;
 
     const columns: any[] = headers.map((header) => {
       return {
         title: header,
         field: header,
-        editor: isPreview
+        editor: isReadOnly
           ? undefined
           : function (cell: any, onRendered: any, success: any, cancel: any) {
               return self.createInputEditor(
@@ -892,22 +941,14 @@ export default class PasteTableComponent
       layout: 'fitDataStretch',
       renderHorizontal: 'virtual',
 
-      selectableRange: !isPreview ? 1 : false,
-      selectableRangeColumns: !isPreview,
-      selectableRangeRows: !isPreview,
-      selectableRangeClearCells: !isPreview,
+      selectableRange: !isReadOnly ? 1 : false,
+      selectableRangeColumns: !isReadOnly,
+      selectableRangeRows: !isReadOnly,
+      selectableRangeClearCells: !isReadOnly,
 
       editTriggerEvent: 'dblclick',
 
-      clipboard: !isPreview,
-      clipboardCopyStyled: false,
-      clipboardCopyConfig: {
-        rowHeaders: false,
-        columnHeaders: false,
-      },
-      clipboardCopyRowRange: 'range',
-      clipboardPasteParser: 'range',
-      clipboardPasteAction: 'range',
+      clipboard: false,
 
       rowHeader: {
         resizable: false,
@@ -927,21 +968,21 @@ export default class PasteTableComponent
       columns,
     });
 
-    if (!isPreview) {
+    if (!isReadOnly) {
       this._table.on('cellEdited', () => {
         if (this._isMutatingTable) return;
-        this.hideError();
         this.normalizeTableRows(headers);
       });
 
       this._table.on('dataChanged', () => {
         if (this._isMutatingTable) return;
-        //this.hideError();
         this.syncValueFromTable(headers);
       });
     }
 
-    const existingValue = this.getValue();
+    const existingValue =
+      (this.dataValue as PasteTableValue) || this.getValue();
+
     if (
       existingValue &&
       Array.isArray(existingValue.rows) &&
@@ -951,23 +992,20 @@ export default class PasteTableComponent
         .slice(0, this.getMaxRows())
         .map((row) => this.mapRowArrayToObject(row, headers));
 
-      if (seededRows.length < this.getMaxRows()) {
+      if (seededRows.length < this.getMaxRows() && !isReadOnly) {
         seededRows.push(this.createBlankRow(headers));
       }
 
+      this._tableValue = existingValue;
+      this.dataValue = existingValue;
+
       this._isMutatingTable = true;
-      this._table.setData(seededRows).finally(() => {
+      this._table.replaceData(seededRows).finally(() => {
         this._isMutatingTable = false;
-        this.syncValueFromTable(headers);
       });
     } else {
-      this.setStoredValue(
-        {
-          headers,
-          rows: [],
-        },
-        false,
-      );
+      this._tableValue = null;
+      this.dataValue = (this as any).emptyValue ?? null;
     }
   }
 
@@ -979,7 +1017,7 @@ export default class PasteTableComponent
     const rules = this.getConfiguredColumnRules();
     const headers = rules.map((rule) => rule.header);
 
-    if (!headers.length || !this._table || this.isBuilderPreview()) {
+    if (!headers.length || !this._table || this.isReadOnlyMode()) {
       return;
     }
 
@@ -994,6 +1032,7 @@ export default class PasteTableComponent
 
     if (!parsedRows.length || parsedRows.length === 1) {
       this.showError('Please copy at least one header row and one data row.');
+      this.clearComponentToEmpty(headers);
       return;
     }
 
@@ -1003,6 +1042,7 @@ export default class PasteTableComponent
       this.showError(
         'Only a header row was pasted. Please copy data rows as well.',
       );
+      this.clearComponentToEmpty(headers);
       return;
     }
 
@@ -1010,6 +1050,7 @@ export default class PasteTableComponent
       this.showError(
         `The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`,
       );
+      this.clearComponentToEmpty(headers);
       return;
     }
 
@@ -1017,6 +1058,7 @@ export default class PasteTableComponent
 
     if (!pasteValidation.isValid) {
       this.showError(pasteValidation.message);
+      this.clearComponentToEmpty(headers);
       return;
     }
 
@@ -1083,6 +1125,7 @@ export default class PasteTableComponent
       this.showError(
         `The pasted content exceeds the maximum allowed ${maxRows} data rows.`,
       );
+      this.clearComponentToEmpty(headers);
       return;
     }
 
@@ -1090,12 +1133,12 @@ export default class PasteTableComponent
       this.mapRowArrayToObject(row, headers),
     );
 
-    if (combinedRows.length < maxRows) {
+    if (combinedRows.length < maxRows && !this.isReadOnlyMode()) {
       nextRows.push(this.createBlankRow(headers));
     }
 
     this._isMutatingTable = true;
-    this._table.setData(nextRows).finally(() => {
+    this._table.replaceData(nextRows).finally(() => {
       this._isMutatingTable = false;
       this.syncValueFromTable(headers);
     });
@@ -1128,9 +1171,42 @@ export default class PasteTableComponent
 
   /**
    * Public setter used by Form.io.
+   * Rehydrates Tabulator when a saved value is pushed back into the component.
    */
   setValue(value: PasteTableValue) {
-    this.setStoredValue(value, true);
+    this._tableValue = value;
+    this.dataValue = value;
+
+    const rules = this.getConfiguredColumnRules();
+    const headers = rules.map((rule) => rule.header);
+
+    if (this._table && headers.length) {
+      if (value && Array.isArray(value.rows) && value.rows.length) {
+        const seededRows = value.rows
+          .slice(0, this.getMaxRows())
+          .map((row) => this.mapRowArrayToObject(row, headers));
+
+        if (seededRows.length < this.getMaxRows() && !this.isReadOnlyMode()) {
+          seededRows.push(this.createBlankRow(headers));
+        }
+
+        this._isMutatingTable = true;
+        this._table.replaceData(seededRows).finally(() => {
+          this._isMutatingTable = false;
+        });
+      } else {
+        const emptyRows =
+          !this.isReadOnlyMode() && headers.length
+            ? [this.createBlankRow(headers)]
+            : [];
+
+        this._isMutatingTable = true;
+        this._table.replaceData(emptyRows).finally(() => {
+          this._isMutatingTable = false;
+        });
+      }
+    }
+
     return true;
   }
 }
