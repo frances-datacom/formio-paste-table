@@ -10194,7 +10194,7 @@ var An = class extends Q {
 	}
 }, jn = e.components.base, $ = class e extends jn {
 	constructor(...e) {
-		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "_isDetached", !1), i(this, "_initAttemptId", 0), i(this, "handleNativePaste", (e) => {
+		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "_isDetached", !1), i(this, "_initAttemptId", 0), i(this, "_selectedRow", null), i(this, "handleNativePaste", (e) => {
 			var t;
 			let n = this.getConfiguredColumnRules(), r = n.map((e) => e.header);
 			if (!r.length || !this._table || this.isReadOnlyMode()) return;
@@ -10202,25 +10202,52 @@ var An = class extends Q {
 			if (!i) return;
 			e.preventDefault();
 			let a = this.parseClipboard(i);
-			if (!a.length || a.length === 1) {
-				this.showError("Please copy at least one header row and one data row.");
+			if (!a.length) {
+				this.showError("Please paste at least one row of data.");
 				return;
 			}
-			let o = a.slice(1);
-			if (!o.length) {
-				this.showError("Only a header row was pasted. Please copy data rows as well.");
-				return;
-			}
-			if (o.length > this.getMaxRows()) {
+			if (a.length > this.getMaxRows()) {
 				this.showError(`The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`);
 				return;
 			}
-			let s = this.validatePastedRows(o, n);
-			if (!s.isValid) {
-				this.showError(s.message), s.severity === "security" && this.clearComponentToEmpty(r);
+			let o = this.validatePastedRows(a, n);
+			if (!o.isValid) {
+				this.showError(o.message), o.severity === "security" && this.clearComponentToEmpty();
 				return;
 			}
-			this.hideError(), this.appendRowsFromClipboard(r, o);
+			this.hideError(), this.appendRowsFromClipboard(r, a);
+		}), i(this, "handleRowSelection", (e) => {
+			if (!this.isReadOnlyMode()) {
+				if (this._selectedRow && this._selectedRow !== e) try {
+					let e = this._selectedRow.getElement();
+					e && e.classList.remove("paste-table-row-selected");
+				} catch (e) {}
+				this._selectedRow = e;
+				try {
+					let t = e.getElement();
+					t && t.classList.add("paste-table-row-selected");
+				} catch (e) {}
+				this.updateDeleteRowButtonVisibility();
+			}
+		}), i(this, "handleAddRow", () => {
+			let e = this.getConfiguredColumnRules().map((e) => e.header);
+			if (!this._table || !e.length || this.isReadOnlyMode()) return;
+			let t = this.getMaxRows();
+			if (this._table.getData().length >= t) {
+				this.updateAddRowButtonVisibility();
+				return;
+			}
+			this._table.addRow(this.createBlankRow(e)).then(() => {
+				this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
+			});
+		}), i(this, "handleDeleteRow", () => {
+			if (!this._table || !this._selectedRow || this.isReadOnlyMode()) return;
+			let e = this.getConfiguredColumnRules().map((e) => e.header);
+			this._isMutatingTable = !0, this._selectedRow.delete().then(() => {
+				this._isMutatingTable = !1, this._selectedRow = null, this.syncValueFromTable(e), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
+			}).catch(() => {
+				this._isMutatingTable = !1, this._selectedRow = null, this.updateDeleteRowButtonVisibility();
+			});
 		});
 	}
 	static schema(...e) {
@@ -10381,7 +10408,7 @@ var An = class extends Q {
 		return e && String(e).trim() ? String(e).trim() : "";
 	}
 	getInfoMessage() {
-		return `Paste spreadsheet rows directly into the table below. The copied first row will be treated as headers and skipped automatically. Maximum allowed data rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
+		return `Paste spreadsheet data directly into the table below. Maximum allowed rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
 	}
 	getConfiguredColumnRules() {
 		return (this.component.tableHeaders || []).map((e) => {
@@ -10424,6 +10451,13 @@ var An = class extends Q {
         <div class="paste-table-wrap">
           <div ref="tabulatorTarget"></div>
         </div>
+
+         ${this.isReadOnlyMode() ? "" : `<div class="paste-table-add-row-footer">
+              <button type="button" class="btn btn-secondary btn-sm paste-table-add-row-btn" ref="addRowBtn">+ Add Row</button>
+              <button type="button" class="btn btn-warning btn-sm paste-table-delete-row-btn" ref="deleteRowBtn" style="display:none;">Delete Row</button>
+              <div class="paste-table-max-row-msg text-muted" ref="maxRowMsg" style="display:none;">Maximum row limit of ${this.getMaxRows()} has been reached.</div>
+              <div class="paste-table-delete-hint text-muted" ref="deleteHint">Select a row, then click Delete row.</div>
+            </div>`}
       </div>
     `);
 	}
@@ -10434,22 +10468,26 @@ var An = class extends Q {
 			userInfoEl: "single",
 			infoMsg: "single",
 			errorMsg: "single",
-			tabulatorTarget: "single"
+			tabulatorTarget: "single",
+			addRowBtn: "single",
+			deleteRowBtn: "single",
+			maxRowMsg: "single",
+			deleteHint: "single"
 		}), !this.isReadOnlyMode()) {
-			var n;
-			(n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste);
+			var n, r, i;
+			(n = this.refs.tabulatorTarget) == null || n.addEventListener("paste", this.handleNativePaste), (r = this.refs.addRowBtn) == null || r.addEventListener("click", this.handleAddRow), (i = this.refs.deleteRowBtn) == null || i.addEventListener("click", this.handleDeleteRow);
 		}
 		return this.scheduleSafeInit(this._initAttemptId, 0), t;
 	}
 	detach() {
-		var e;
-		if (this._isDetached = !0, this._initAttemptId += 1, (e = this.refs.tabulatorTarget) == null || e.removeEventListener("paste", this.handleNativePaste), this._table) {
+		var e, t, n;
+		if (this._isDetached = !0, this._initAttemptId += 1, (e = this.refs.tabulatorTarget) == null || e.removeEventListener("paste", this.handleNativePaste), (t = this.refs.addRowBtn) == null || t.removeEventListener("click", this.handleAddRow), (n = this.refs.deleteRowBtn) == null || n.removeEventListener("click", this.handleDeleteRow), this._table) {
 			try {
 				this._table.destroy();
 			} catch (e) {}
 			this._table = null;
 		}
-		return super.detach();
+		return this._selectedRow = null, super.detach();
 	}
 	scheduleSafeInit(e, t) {
 		let n = this;
@@ -10539,19 +10577,19 @@ var An = class extends Q {
 		let t = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== ""));
 		if (!t.length) {
 			var n;
-			this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, this.isBuilderPreview() || this.triggerChange();
+			this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, this.isBuilderPreview() || this.triggerChange(), this.updateAddRowButtonVisibility();
 			return;
 		}
 		this.setStoredValue({
 			headers: e,
 			rows: t
-		}, !this.isBuilderPreview());
+		}, !this.isBuilderPreview()), this.updateAddRowButtonVisibility();
 	}
 	normalizeTableRows(e) {
 		if (!this._table) return;
-		let t = this.getMaxRows(), n = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== "")).slice(0, t), r = n.map((t) => this.mapRowArrayToObject(t, e));
-		n.length < t && !this.isReadOnlyMode() && r.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(r).finally(() => {
-			this._isMutatingTable = !1, this.syncValueFromTable(e);
+		let t = this.getMaxRows(), n = this._table.getData().map((t) => this.mapRowArrayToObject(this.mapRowObjectToArray(t, e), e)).slice(0, t);
+		this._isMutatingTable = !0, this._table.setData(n).finally(() => {
+			this._isMutatingTable = !1, this.syncValueFromTable(e), this.updateAddRowButtonVisibility();
 		});
 	}
 	validateCellValue(e, t, n) {
@@ -10592,13 +10630,11 @@ var An = class extends Q {
 		for (n = 0; n < t.length; n += 1) if (t[n].header === e) return t[n];
 		return null;
 	}
-	clearComponentToEmpty(e) {
-		var t;
-		if (this._tableValue = null, this.dataValue = (t = this.emptyValue) == null ? null : t, this.isBuilderPreview() || this.triggerChange(), !this._table) return;
-		let n = e.length && !this.isReadOnlyMode() ? [this.createBlankRow(e)] : [];
-		this._isMutatingTable = !0, this._table.setData(n).finally(() => {
-			this._isMutatingTable = !1;
-		});
+	clearComponentToEmpty() {
+		var e;
+		this._tableValue = null, this.dataValue = (e = this.emptyValue) == null ? null : e, this.isBuilderPreview() || this.triggerChange(), this._table && (this._isMutatingTable = !0, this._table.setData([]).finally(() => {
+			this._isMutatingTable = !1, this.clearSelectedRow(), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
+		}));
 	}
 	createInputEditor(e, t, n, r, i) {
 		let a = document.createElement("input"), o = e.getValue() == null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
@@ -10619,9 +10655,7 @@ var An = class extends Q {
 			if (c) {
 				let t = l.validateCellValue(e, c, "manual");
 				if (!t.isValid) {
-					l.showError(t.message), t.severity === "security" && l.clearComponentToEmpty(i.map(function(e) {
-						return e.header;
-					})), r();
+					l.showError(t.message), t.severity === "security" && l.clearComponentToEmpty(), r();
 					return;
 				}
 			}
@@ -10632,22 +10666,23 @@ var An = class extends Q {
 		}), a;
 	}
 	buildRowsFromValue(e, t, n) {
-		if (e && Array.isArray(e.rows) && e.rows.length) {
-			let r = e.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, t));
-			return r.length < this.getMaxRows() && !n && r.push(this.createBlankRow(t)), r;
-		}
-		return !n && t.length ? [this.createBlankRow(t)] : [];
+		return e && Array.isArray(e.rows) && e.rows.length ? e.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, t)) : !n && t.length ? [this.createBlankRow(t)] : [];
 	}
 	getInitialTableData(e, t) {
 		var n;
 		let r = this.dataValue || this.getValue();
-		return r ? (this._tableValue = r, this.dataValue = r, this.buildRowsFromValue(r, e, t)) : (this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, !t && e.length ? [this.createBlankRow(e)] : []);
+		if (r) {
+			this._tableValue = r, this.dataValue = r;
+			let n = this.buildRowsFromValue(r, e, t);
+			return !t && n.length === 0 ? [this.createBlankRow(e)] : n;
+		}
+		return this._tableValue = null, this.dataValue = (n = this.emptyValue) == null ? null : n, !t && e.length ? [this.createBlankRow(e)] : [];
 	}
 	applyStoredValueToTable() {
 		if (!this._table) return;
 		let e = this.getConfiguredColumnRules().map((e) => e.header), t = this.isReadOnlyMode(), n = this.dataValue || this._tableValue, r = this.buildRowsFromValue(n, e, t);
 		this._isMutatingTable = !0, this._table.setData(r).finally(() => {
-			this._isMutatingTable = !1;
+			this._isMutatingTable = !1, this.clearSelectedRow(), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
 		});
 	}
 	initTableFromConfiguredHeaders() {
@@ -10694,11 +10729,14 @@ var An = class extends Q {
 				width: 180
 			},
 			columns: a
-		}), n || (this._table.on("cellEdited", () => {
+		}), n || (this._table.on("cellClick", (e, t) => {
+			let n = t.getRow();
+			this.handleRowSelection(n);
+		}), this._table.on("cellEdited", () => {
 			this._isMutatingTable || this._isDetached || this.normalizeTableRows(t);
 		}), this._table.on("dataChanged", () => {
 			this._isMutatingTable || this._isDetached || this.syncValueFromTable(t);
-		}));
+		})), this.clearSelectedRow(), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
 	}
 	validatePastedRows(e, t) {
 		let n = 0, r = 0;
@@ -10723,18 +10761,36 @@ var An = class extends Q {
 	}
 	appendRowsFromClipboard(e, t) {
 		if (!this._table) return;
-		let n = this.getMaxRows(), r = this._table.getData().map((t) => this.mapRowObjectToArray(t, e)).filter((e) => e.some((e) => String(e).trim() !== "")), i = t.map((t) => e.map((e, n) => {
+		let n = this.getMaxRows(), r = this._table.getData().map((t) => this.mapRowArrayToObject(this.mapRowObjectToArray(t, e), e)), i = t.map((t) => this.mapRowArrayToObject(e.map((e, n) => {
 			var r;
 			return (r = t[n]) == null ? "" : r;
-		})), a = r.concat(i);
+		}), e)), a = r.slice(), o = 0, s = 0;
+		for (s = 0; s < a.length && o < i.length; s += 1) this.mapRowObjectToArray(a[s], e).every((e) => String(e).trim() === "") && (a[s] = i[o], o += 1);
+		for (; o < i.length;) a.push(i[o]), o += 1;
 		if (a.length > n) {
 			this.showError(`The pasted content exceeds the maximum allowed ${n} data rows.`);
 			return;
 		}
-		let o = a.map((t) => this.mapRowArrayToObject(t, e));
-		a.length < n && !this.isReadOnlyMode() && o.push(this.createBlankRow(e)), this._isMutatingTable = !0, this._table.setData(o).finally(() => {
-			this._isMutatingTable = !1, this.syncValueFromTable(e);
+		this._isMutatingTable = !0, this._table.setData(a).finally(() => {
+			this._isMutatingTable = !1, this.clearSelectedRow(), this.syncValueFromTable(e), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
 		});
+	}
+	updateAddRowButtonVisibility() {
+		if (!this.refs.addRowBtn && !this.refs.maxRowMsg) return;
+		let e = this.getMaxRows();
+		(this._table ? this._table.getData() : []).length >= e ? (this.refs.addRowBtn && (this.refs.addRowBtn.style.display = "none"), this.refs.maxRowMsg && (this.refs.maxRowMsg.style.display = "block")) : (this.refs.addRowBtn && (this.refs.addRowBtn.style.display = ""), this.refs.maxRowMsg && (this.refs.maxRowMsg.style.display = "none"));
+	}
+	clearSelectedRow() {
+		if (this._selectedRow) try {
+			let e = this._selectedRow.getElement();
+			e && e.classList.remove("paste-table-row-selected");
+		} catch (e) {}
+		this._selectedRow = null, this.updateDeleteRowButtonVisibility();
+	}
+	updateDeleteRowButtonVisibility() {
+		if (!this.refs.deleteRowBtn) return;
+		let e = !!this._selectedRow;
+		this.refs.deleteRowBtn.style.display = !this.isReadOnlyMode() && e ? "" : "none";
 	}
 	showError(e) {
 		this.refs.errorMsg && (this.refs.errorMsg.textContent = e, this.refs.errorMsg.style.display = "block");

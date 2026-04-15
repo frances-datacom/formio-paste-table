@@ -10,6 +10,10 @@ type PasteTableRefs = {
     infoMsg?: HTMLDivElement;
     errorMsg?: HTMLDivElement;
     tabulatorTarget?: HTMLDivElement;
+    addRowBtn?: HTMLButtonElement;
+    deleteRowBtn?: HTMLButtonElement;
+    maxRowMsg?: HTMLDivElement;
+    deleteHint?: HTMLDivElement;
 };
 type PasteTableDataType = 'alphabet' | 'numeric' | 'alphanumeric' | 'email';
 type PasteTableHeaderSetting = {
@@ -48,6 +52,7 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private _isMutatingTable;
     private _isDetached;
     private _initAttemptId;
+    private _selectedRow;
     static schema(...extend: any[]): any;
     static get builderInfo(): {
         title: string;
@@ -213,6 +218,12 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private handleNativePaste;
     private validatePastedRows;
     private appendRowsFromClipboard;
+    private handleRowSelection;
+    private handleAddRow;
+    private updateAddRowButtonVisibility;
+    private clearSelectedRow;
+    private handleDeleteRow;
+    private updateDeleteRowButtonVisibility;
     private showError;
     private hideError;
     getValue(): PasteTableValue;
