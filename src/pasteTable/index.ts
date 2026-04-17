@@ -92,8 +92,7 @@ export default class PasteTableComponent
         input: true,
         tableHeaders: [],
         maxRows: 10,
-        customMessage:
-          'Please add at least one complete row and do not leave incomplete rows in the table.',
+        customMessage: 'Add table content to continue.',
         userInformation: '',
         validate: {
           required: true,
@@ -159,8 +158,7 @@ export default class PasteTableComponent
                   key: 'customMessage',
                   label: 'Custom error message',
                   input: true,
-                  defaultValue:
-                    'Please add at least one complete row and do not leave incomplete rows in the table.',
+                  defaultValue: 'Add table content to continue.',
                 },
                 {
                   type: 'textarea',
@@ -263,7 +261,7 @@ export default class PasteTableComponent
       return String(msg).trim();
     }
 
-    return 'Please add at least one complete row and do not leave incomplete rows in the table.';
+    return 'Add table content to continue.';
   }
 
   private getUserInformation(): string {
@@ -271,9 +269,9 @@ export default class PasteTableComponent
     return info && String(info).trim() ? String(info).trim() : '';
   }
 
-  private getInfoMessage(): string {
-    return `Paste spreadsheet data directly into the table below. Maximum allowed rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
-  }
+  // private getInfoMessage(): string {
+  //   return `Paste spreadsheet data directly into the table below. Maximum allowed rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
+  // }
 
   private getConfiguredColumnRules(): PasteTableColumnRule[] {
     return (this.component.tableHeaders || [])
@@ -346,9 +344,7 @@ export default class PasteTableComponent
             : ''
         }
 
-        <div class="paste-table-info" ref="infoMsg">
-          ${this.getInfoMessage()}
-        </div>
+       
 
         <div class="paste-error text-danger" ref="errorMsg" style="display:none;"></div>
 
@@ -715,8 +711,8 @@ export default class PasteTableComponent
         severity: 'security',
         message:
           mode === 'paste'
-            ? `The pasted value for "${rule.header}" contains unsafe content and was rejected.`
-            : `The entered value for "${rule.header}" contains unsafe content and was rejected.`,
+            ? `"${rule.header}" contains characters that aren’t supported.`
+            : `"${rule.header}" contains characters that aren’t supported.`,
       };
     }
 
@@ -726,8 +722,8 @@ export default class PasteTableComponent
         severity: 'business',
         message:
           mode === 'paste'
-            ? `The pasted value for "${rule.header}" exceeds the maximum of ${rule.maxChars} characters.`
-            : `The entered value for "${rule.header}" exceeds the maximum of ${rule.maxChars} characters.`,
+            ? ` "${rule.header}"  can be no longer than ${rule.maxChars} characters.`
+            : ` "${rule.header}"  can be no longer than ${rule.maxChars} characters.`,
       };
     }
 
@@ -737,8 +733,8 @@ export default class PasteTableComponent
         severity: 'business',
         message:
           mode === 'paste'
-            ? `The pasted value for "${rule.header}" does not match the allowed data type (${this.getDataTypeLabel(rule.dataType)}).`
-            : `The entered value for "${rule.header}" does not match the allowed data type (${this.getDataTypeLabel(rule.dataType)}).`,
+            ? `"${rule.header}"  must be a (${this.getDataTypeLabel(rule.dataType)}).`
+            : `"${rule.header}"  must be a (${this.getDataTypeLabel(rule.dataType)}).`,
       };
     }
 
@@ -1040,7 +1036,7 @@ export default class PasteTableComponent
       rowHeader: {
         resizable: false,
         frozen: true,
-        width: 40,
+        width: 60,
         hozAlign: 'center',
         formatter: 'rownum',
       },
@@ -1102,7 +1098,7 @@ export default class PasteTableComponent
 
     if (parsedRows.length > this.getMaxRows()) {
       this.showError(
-        `The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`,
+        `Cannot accept more than the allowed ${this.getMaxRows()} rows.`,
       );
       return;
     }
@@ -1137,8 +1133,7 @@ export default class PasteTableComponent
         return {
           isValid: false,
           severity: 'business',
-          message:
-            'The pasted content has more columns than this table allows.',
+          message: 'The pasted data contains more columns than allowed.',
         };
       }
 
@@ -1207,9 +1202,7 @@ export default class PasteTableComponent
     }
 
     if (nextRows.length > maxRows) {
-      this.showError(
-        `The pasted content exceeds the maximum allowed ${maxRows} data rows.`,
-      );
+      this.showError(`Cannot accept more than the allowed ${maxRows} rows.`);
       return;
     }
 

@@ -14806,7 +14806,7 @@ var BCFormioPasteTable = function (e, t) {
             return;
           }
           if (a.length > _this242.getMaxRows()) {
-            _this242.showError("The pasted content exceeds the maximum allowed ".concat(_this242.getMaxRows(), " data rows."));
+            _this242.showError("Cannot accept more than the allowed ".concat(_this242.getMaxRows(), " rows."));
             return;
           }
           var o = _this242.validatePastedRows(a, n);
@@ -14875,18 +14875,13 @@ var BCFormioPasteTable = function (e, t) {
         key: "getValidationMessage",
         value: function getValidationMessage() {
           var _e574 = this.component.customMessage;
-          return _e574 && String(_e574).trim() ? String(_e574).trim() : "Please add at least one complete row and do not leave incomplete rows in the table.";
+          return _e574 && String(_e574).trim() ? String(_e574).trim() : "Add table content to continue.";
         }
       }, {
         key: "getUserInformation",
         value: function getUserInformation() {
           var _e575 = this.component.userInformation;
           return _e575 && String(_e575).trim() ? String(_e575).trim() : "";
-        }
-      }, {
-        key: "getInfoMessage",
-        value: function getInfoMessage() {
-          return "Paste spreadsheet data directly into the table below. Maximum allowed rows: ".concat(this.getMaxRows(), ". Incomplete rows are not allowed.");
         }
       }, {
         key: "getConfiguredColumnRules",
@@ -14924,7 +14919,7 @@ var BCFormioPasteTable = function (e, t) {
           var _e578 = this.component.label ? String(this.component.label) : "",
             t = !!(this.component.validate && this.component.validate.required),
             n = this.getUserInformation();
-          return _superPropGet(e, "render", this, 3)(["\n      <div class=\"paste-table-root\">\n        ".concat(_e578 ? "<label class=\"control-label paste-table-label\" ref=\"labelEl\">\n                ".concat(_e578).concat(t ? " <span class=\"field-required\">*</span>" : "", "\n              </label>") : "", "\n\n        ").concat(n ? "<div class=\"paste-table-userinfo\" ref=\"userInfoEl\">".concat(n, "</div>") : "", "\n\n        <div class=\"paste-table-info\" ref=\"infoMsg\">\n          ").concat(this.getInfoMessage(), "\n        </div>\n\n        <div class=\"paste-error text-danger\" ref=\"errorMsg\" style=\"display:none;\"></div>\n\n        <div class=\"paste-table-wrap\">\n          <div ref=\"tabulatorTarget\"></div>\n        </div>\n\n         ").concat(this.isReadOnlyMode() ? "" : "<div class=\"paste-table-add-row-footer\">\n              <button type=\"button\" class=\"btn btn-secondary btn-sm paste-table-add-row-btn\" ref=\"addRowBtn\">+ Add Row</button>\n              <button type=\"button\" class=\"btn btn-warning btn-sm paste-table-delete-row-btn\" ref=\"deleteRowBtn\" style=\"display:none;\">Delete Row</button>\n              <div class=\"paste-table-max-row-msg text-muted\" ref=\"maxRowMsg\" style=\"display:none;\">Maximum row limit of ".concat(this.getMaxRows(), " has been reached.</div>\n              <div class=\"paste-table-delete-hint text-muted\" ref=\"deleteHint\">Select a row, then click Delete row.</div>\n            </div>"), "\n      </div>\n    ")]);
+          return _superPropGet(e, "render", this, 3)(["\n      <div class=\"paste-table-root\">\n        ".concat(_e578 ? "<label class=\"control-label paste-table-label\" ref=\"labelEl\">\n                ".concat(_e578).concat(t ? " <span class=\"field-required\">*</span>" : "", "\n              </label>") : "", "\n\n        ").concat(n ? "<div class=\"paste-table-userinfo\" ref=\"userInfoEl\">".concat(n, "</div>") : "", "\n\n       \n\n        <div class=\"paste-error text-danger\" ref=\"errorMsg\" style=\"display:none;\"></div>\n\n        <div class=\"paste-table-wrap\">\n          <div ref=\"tabulatorTarget\"></div>\n        </div>\n\n         ").concat(this.isReadOnlyMode() ? "" : "<div class=\"paste-table-add-row-footer\">\n              <button type=\"button\" class=\"btn btn-secondary btn-sm paste-table-add-row-btn\" ref=\"addRowBtn\">+ Add Row</button>\n              <button type=\"button\" class=\"btn btn-warning btn-sm paste-table-delete-row-btn\" ref=\"deleteRowBtn\" style=\"display:none;\">Delete Row</button>\n              <div class=\"paste-table-max-row-msg text-muted\" ref=\"maxRowMsg\" style=\"display:none;\">Maximum row limit of ".concat(this.getMaxRows(), " has been reached.</div>\n              <div class=\"paste-table-delete-hint text-muted\" ref=\"deleteHint\">Select a row, then click Delete row.</div>\n            </div>"), "\n      </div>\n    ")]);
         }
       }, {
         key: "attach",
@@ -15149,11 +15144,11 @@ var BCFormioPasteTable = function (e, t) {
           } : this.containsUnsafePattern(r) ? {
             isValid: !1,
             severity: "security",
-            message: n === "paste" ? "The pasted value for \"".concat(t.header, "\" contains unsafe content and was rejected.") : "The entered value for \"".concat(t.header, "\" contains unsafe content and was rejected.")
+            message: "\"".concat(t.header, "\" contains characters that aren\u2019t supported.")
           } : r.length > t.maxChars ? {
             isValid: !1,
             severity: "business",
-            message: n === "paste" ? "The pasted value for \"".concat(t.header, "\" exceeds the maximum of ").concat(t.maxChars, " characters.") : "The entered value for \"".concat(t.header, "\" exceeds the maximum of ").concat(t.maxChars, " characters.")
+            message: " \"".concat(t.header, "\"  can be no longer than ").concat(t.maxChars, " characters.")
           } : this.matchesDataType(r, t.dataType) ? {
             isValid: !0,
             message: "",
@@ -15161,7 +15156,7 @@ var BCFormioPasteTable = function (e, t) {
           } : {
             isValid: !1,
             severity: "business",
-            message: n === "paste" ? "The pasted value for \"".concat(t.header, "\" does not match the allowed data type (").concat(this.getDataTypeLabel(t.dataType), ").") : "The entered value for \"".concat(t.header, "\" does not match the allowed data type (").concat(this.getDataTypeLabel(t.dataType), ").")
+            message: "\"".concat(t.header, "\"  must be a (").concat(this.getDataTypeLabel(t.dataType), ").")
           };
         }
       }, {
@@ -15310,7 +15305,7 @@ var BCFormioPasteTable = function (e, t) {
               rowHeader: {
                 resizable: !1,
                 frozen: !0,
-                width: 40,
+                width: 60,
                 hozAlign: "center",
                 formatter: "rownum"
               },
@@ -15341,7 +15336,7 @@ var BCFormioPasteTable = function (e, t) {
             if (_a4.length > t.length) return {
               isValid: !1,
               severity: "business",
-              message: "The pasted content has more columns than this table allows."
+              message: "The pasted data contains more columns than allowed."
             };
             for (r = 0; r < _a4.length; r += 1) {
               var i;
@@ -15380,7 +15375,7 @@ var BCFormioPasteTable = function (e, t) {
           }) && (a[s] = i[o], o += 1);
           for (; o < i.length;) a.push(i[o]), o += 1;
           if (a.length > n) {
-            this.showError("The pasted content exceeds the maximum allowed ".concat(n, " data rows."));
+            this.showError("Cannot accept more than the allowed ".concat(n, " rows."));
             return;
           }
           this._isMutatingTable = !0, this._table.setData(a).finally(function () {
@@ -15443,7 +15438,7 @@ var BCFormioPasteTable = function (e, t) {
             input: !0,
             tableHeaders: [],
             maxRows: 10,
-            customMessage: "Please add at least one complete row and do not leave incomplete rows in the table.",
+            customMessage: "Add table content to continue.",
             userInformation: "",
             validate: {
               required: !0
@@ -15502,7 +15497,7 @@ var BCFormioPasteTable = function (e, t) {
                   key: "customMessage",
                   label: "Custom error message",
                   input: !0,
-                  defaultValue: "Please add at least one complete row and do not leave incomplete rows in the table."
+                  defaultValue: "Add table content to continue."
                 }, {
                   type: "textarea",
                   key: "userInformation",

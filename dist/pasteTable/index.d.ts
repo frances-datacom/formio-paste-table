@@ -175,7 +175,6 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private getMaxRows;
     private getValidationMessage;
     private getUserInformation;
-    private getInfoMessage;
     private getConfiguredColumnRules;
     private isValidDataType;
     render(): string;

@@ -10207,7 +10207,7 @@ var An = class extends Q {
 				return;
 			}
 			if (a.length > this.getMaxRows()) {
-				this.showError(`The pasted content exceeds the maximum allowed ${this.getMaxRows()} data rows.`);
+				this.showError(`Cannot accept more than the allowed ${this.getMaxRows()} rows.`);
 				return;
 			}
 			let o = this.validatePastedRows(a, n);
@@ -10258,7 +10258,7 @@ var An = class extends Q {
 			input: !0,
 			tableHeaders: [],
 			maxRows: 10,
-			customMessage: "Please add at least one complete row and do not leave incomplete rows in the table.",
+			customMessage: "Add table content to continue.",
 			userInformation: "",
 			validate: { required: !0 }
 		}, ...e);
@@ -10315,7 +10315,7 @@ var An = class extends Q {
 						key: "customMessage",
 						label: "Custom error message",
 						input: !0,
-						defaultValue: "Please add at least one complete row and do not leave incomplete rows in the table."
+						defaultValue: "Add table content to continue."
 					},
 					{
 						type: "textarea",
@@ -10401,14 +10401,11 @@ var An = class extends Q {
 	}
 	getValidationMessage() {
 		let e = this.component.customMessage;
-		return e && String(e).trim() ? String(e).trim() : "Please add at least one complete row and do not leave incomplete rows in the table.";
+		return e && String(e).trim() ? String(e).trim() : "Add table content to continue.";
 	}
 	getUserInformation() {
 		let e = this.component.userInformation;
 		return e && String(e).trim() ? String(e).trim() : "";
-	}
-	getInfoMessage() {
-		return `Paste spreadsheet data directly into the table below. Maximum allowed rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
 	}
 	getConfiguredColumnRules() {
 		return (this.component.tableHeaders || []).map((e) => {
@@ -10442,9 +10439,7 @@ var An = class extends Q {
 
         ${n ? `<div class="paste-table-userinfo" ref="userInfoEl">${n}</div>` : ""}
 
-        <div class="paste-table-info" ref="infoMsg">
-          ${this.getInfoMessage()}
-        </div>
+       
 
         <div class="paste-error text-danger" ref="errorMsg" style="display:none;"></div>
 
@@ -10601,11 +10596,11 @@ var An = class extends Q {
 		} : this.containsUnsafePattern(r) ? {
 			isValid: !1,
 			severity: "security",
-			message: n === "paste" ? `The pasted value for "${t.header}" contains unsafe content and was rejected.` : `The entered value for "${t.header}" contains unsafe content and was rejected.`
+			message: `"${t.header}" contains characters that aren’t supported.`
 		} : r.length > t.maxChars ? {
 			isValid: !1,
 			severity: "business",
-			message: n === "paste" ? `The pasted value for "${t.header}" exceeds the maximum of ${t.maxChars} characters.` : `The entered value for "${t.header}" exceeds the maximum of ${t.maxChars} characters.`
+			message: ` "${t.header}"  can be no longer than ${t.maxChars} characters.`
 		} : this.matchesDataType(r, t.dataType) ? {
 			isValid: !0,
 			message: "",
@@ -10613,7 +10608,7 @@ var An = class extends Q {
 		} : {
 			isValid: !1,
 			severity: "business",
-			message: n === "paste" ? `The pasted value for "${t.header}" does not match the allowed data type (${this.getDataTypeLabel(t.dataType)}).` : `The entered value for "${t.header}" does not match the allowed data type (${this.getDataTypeLabel(t.dataType)}).`
+			message: `"${t.header}"  must be a (${this.getDataTypeLabel(t.dataType)}).`
 		};
 	}
 	containsUnsafePattern(e) {
@@ -10719,7 +10714,7 @@ var An = class extends Q {
 			rowHeader: {
 				resizable: !1,
 				frozen: !0,
-				width: 40,
+				width: 60,
 				hozAlign: "center",
 				formatter: "rownum"
 			},
@@ -10747,7 +10742,7 @@ var An = class extends Q {
 			if (a.length > t.length) return {
 				isValid: !1,
 				severity: "business",
-				message: "The pasted content has more columns than this table allows."
+				message: "The pasted data contains more columns than allowed."
 			};
 			for (r = 0; r < a.length; r += 1) {
 				var i;
@@ -10770,7 +10765,7 @@ var An = class extends Q {
 		for (s = 0; s < a.length && o < i.length; s += 1) this.mapRowObjectToArray(a[s], e).every((e) => String(e).trim() === "") && (a[s] = i[o], o += 1);
 		for (; o < i.length;) a.push(i[o]), o += 1;
 		if (a.length > n) {
-			this.showError(`The pasted content exceeds the maximum allowed ${n} data rows.`);
+			this.showError(`Cannot accept more than the allowed ${n} rows.`);
 			return;
 		}
 		this._isMutatingTable = !0, this._table.setData(a).finally(() => {
