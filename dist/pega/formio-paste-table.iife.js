@@ -15202,7 +15202,7 @@ var BCFormioPasteTable = function (e, t) {
             o = _e619.getValue() == null ? "" : String(_e619.getValue()),
             s = String(_e619.getField() || ""),
             c = this.getRuleByHeader(s, i);
-          a.setAttribute("type", "text"), a.value = o, a.style.padding = "4px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
+          a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
             a.focus();
           }), a.addEventListener("mousedown", function (e) {
             e.stopPropagation();
@@ -15294,32 +15294,35 @@ var BCFormioPasteTable = function (e, t) {
                   return r.createInputEditor(t, n, i, a, _e625);
                 }
               };
-            });
-          this._table = new jn(this.refs.tabulatorTarget, {
-            data: i,
-            layout: "fitDataStretch",
-            renderHorizontal: "virtual",
-            selectableRange: n ? !1 : 1,
-            selectableRangeColumns: !n,
-            selectableRangeRows: !n,
-            selectableRangeClearCells: !n,
-            editTriggerEvent: "dblclick",
-            clipboard: !1,
-            rowHeader: {
-              resizable: !1,
-              frozen: !0,
-              width: 40,
-              hozAlign: "center",
-              formatter: "rownum"
-            },
-            columnDefaults: {
-              headerSort: !1,
-              headerHozAlign: "center",
-              resizable: "header",
-              width: 180
-            },
-            columns: a
-          }), n || (this._table.on("cellClick", function (_e628, t) {
+            }),
+            o = {
+              data: i,
+              layout: "fitDataStretch",
+              renderHorizontal: "virtual",
+              selectableRange: n ? !1 : 1,
+              selectableRangeColumns: !n,
+              selectableRangeRows: !n,
+              selectableRangeClearCells: !n,
+              selectableRangeAutoFocus: !1,
+              selectableRangeBlurEditOnNavigate: !1,
+              editTriggerEvent: "click",
+              clipboard: !1,
+              rowHeader: {
+                resizable: !1,
+                frozen: !0,
+                width: 40,
+                hozAlign: "center",
+                formatter: "rownum"
+              },
+              columnDefaults: {
+                headerSort: !1,
+                headerHozAlign: "center",
+                resizable: "header",
+                width: 180
+              },
+              columns: a
+            };
+          this._table = new jn(this.refs.tabulatorTarget, o), n || (this._table.on("cellClick", function (_e628, t) {
             var n = t.getRow();
             _this251.handleRowSelection(n);
           }), this._table.on("cellEdited", function () {

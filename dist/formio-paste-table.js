@@ -10638,7 +10638,7 @@ var An = class extends Q {
 	}
 	createInputEditor(e, t, n, r, i) {
 		let a = document.createElement("input"), o = e.getValue() == null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
-		a.setAttribute("type", "text"), a.value = o, a.style.padding = "4px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function() {
+		a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function() {
 			a.focus();
 		}), a.addEventListener("mousedown", function(e) {
 			e.stopPropagation();
@@ -10704,8 +10704,7 @@ var An = class extends Q {
 			editor: n ? void 0 : function(t, n, i, a) {
 				return r.createInputEditor(t, n, i, a, e);
 			}
-		}));
-		this._table = new An(this.refs.tabulatorTarget, {
+		})), o = {
 			data: i,
 			layout: "fitDataStretch",
 			renderHorizontal: "virtual",
@@ -10713,7 +10712,9 @@ var An = class extends Q {
 			selectableRangeColumns: !n,
 			selectableRangeRows: !n,
 			selectableRangeClearCells: !n,
-			editTriggerEvent: "dblclick",
+			selectableRangeAutoFocus: !1,
+			selectableRangeBlurEditOnNavigate: !1,
+			editTriggerEvent: "click",
 			clipboard: !1,
 			rowHeader: {
 				resizable: !1,
@@ -10729,7 +10730,8 @@ var An = class extends Q {
 				width: 180
 			},
 			columns: a
-		}), n || (this._table.on("cellClick", (e, t) => {
+		};
+		this._table = new An(this.refs.tabulatorTarget, o), n || (this._table.on("cellClick", (e, t) => {
 			let n = t.getRow();
 			this.handleRowSelection(n);
 		}), this._table.on("cellEdited", () => {

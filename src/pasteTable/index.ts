@@ -837,7 +837,8 @@ export default class PasteTableComponent
 
     input.setAttribute('type', 'text');
     input.value = currentValue;
-    input.style.padding = '4px';
+    input.style.padding = '8px 10px';
+    input.style.minHeight = '36px';
     input.style.width = '100%';
     input.style.height = '100%';
     input.style.boxSizing = 'border-box';
@@ -1020,8 +1021,7 @@ export default class PasteTableComponent
             },
       };
     });
-
-    this._table = new Tabulator(this.refs.tabulatorTarget, {
+    const tableOptions: any = {
       data: initialData,
       layout: 'fitDataStretch',
       renderHorizontal: 'virtual',
@@ -1030,8 +1030,10 @@ export default class PasteTableComponent
       selectableRangeColumns: !isReadOnly,
       selectableRangeRows: !isReadOnly,
       selectableRangeClearCells: !isReadOnly,
+      selectableRangeAutoFocus: false,
+      selectableRangeBlurEditOnNavigate: false,
 
-      editTriggerEvent: 'dblclick',
+      editTriggerEvent: 'click',
 
       clipboard: false,
 
@@ -1051,7 +1053,8 @@ export default class PasteTableComponent
       },
 
       columns,
-    });
+    };
+    this._table = new Tabulator(this.refs.tabulatorTarget, tableOptions);
 
     if (!isReadOnly) {
       this._table.on('cellClick', (_e: any, cell: any) => {
