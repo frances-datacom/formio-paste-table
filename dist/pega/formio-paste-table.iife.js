@@ -15301,7 +15301,7 @@ var BCFormioPasteTable = function (e, t) {
                 }
               };
             }),
-            o = (typeof window === "undefined" ? "undefined" : _typeof(window)) < "u" && ("ontouchstart" in window || navigator.maxTouchPoints > 0),
+            o = (typeof window === "undefined" ? "undefined" : _typeof(window)) < "u" && window.matchMedia("(hover: none) and (pointer: coarse)").matches,
             s = {
               data: i,
               layout: "fitDataStretch",

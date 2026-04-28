@@ -1059,9 +1059,12 @@ export default class PasteTableComponent
             },
       };
     });
+    // const isTouchDevice =
+    //   typeof window !== 'undefined' &&
+    //   ('ontouchstart' in window || navigator.maxTouchPoints > 0);
     const isTouchDevice =
       typeof window !== 'undefined' &&
-      ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+      window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     const tableOptions: any = {
       data: initialData,
       layout: 'fitDataStretch',
