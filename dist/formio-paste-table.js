@@ -10742,6 +10742,10 @@ var An = class extends Q {
 			o || this.handleRowSelection(t.getRow());
 		}), this._table.on("cellTap", (e, t) => {
 			o && (this.handleRowSelection(t.getRow()), t.edit(!0));
+		}), this._table.on("rowClick", (e, t) => {
+			this.handleRowSelection(t);
+		}), this._table.on("rowTap", (e, t) => {
+			this.handleRowSelection(t);
 		}), this._table.on("cellEdited", () => {
 			this._isMutatingTable || this._isDetached || this.normalizeTableRows(t);
 		}), this._table.on("dataChanged", () => {

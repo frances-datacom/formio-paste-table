@@ -1120,6 +1120,14 @@ export default class PasteTableComponent
         cell.edit(true);
       });
 
+      this._table.on('rowClick', (_e: any, row: any) => {
+        this.handleRowSelection(row);
+      });
+
+      this._table.on('rowTap', (_e: any, row: any) => {
+        this.handleRowSelection(row);
+      });
+
       this._table.on('cellEdited', () => {
         if (this._isMutatingTable || this._isDetached) return;
         this.normalizeTableRows(headers);
