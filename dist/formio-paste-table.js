@@ -10266,7 +10266,7 @@ var An = class extends Q {
 			input: !0,
 			tableHeaders: [],
 			maxRows: 10,
-			customMessage: "Add table content to continue!!!",
+			customMessage: "Add table content to continue.",
 			userInformation: "",
 			validate: { required: !0 }
 		}, ...e);
