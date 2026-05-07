@@ -97,7 +97,7 @@ export default class PasteTableComponent
         input: true,
         tableHeaders: [],
         maxRows: 10,
-        customMessage: 'Add table content to continue.',
+        customMessage: 'Add table content to continue!!!',
         userInformation: '',
         validate: {
           required: true,
