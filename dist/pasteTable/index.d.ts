@@ -32,7 +32,6 @@ type PasteTableSchema = {
         [key: string]: any;
     };
     disabled?: boolean;
-    defaultValue?: any;
     [key: string]: any;
 };
 interface BaseComponentInstance {
@@ -40,7 +39,6 @@ interface BaseComponentInstance {
     options?: Record<string, any>;
     triggerChange(): void;
     dataValue: unknown;
-    defaultValue: unknown;
     loadRefs(element: HTMLElement, refs: Record<string, string>): void;
     render(template: string): string;
     attach(element: HTMLElement): Promise<void> | void;

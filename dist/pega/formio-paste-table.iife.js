@@ -14868,7 +14868,7 @@ var BCFormioPasteTable = function (e, t) {
         get: function get() {
           var e;
           var t = ((e = this.component.defaultValue) == null ? "" : e).trim();
-          return console.log("defaultValue", t), t === "" ? null : {
+          return t === "" ? null : {
             headers: this.getConfiguredColumnRules().map(function (e) {
               return e.header;
             }),
