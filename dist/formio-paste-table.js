@@ -10274,7 +10274,10 @@ var An = class extends Q {
 	get defaultValue() {
 		var e;
 		let t = ((e = this.component.defaultValue) == null ? "" : e).trim();
-		return console.log("defaultValue", t), t === "" ? null : t.split(",").map((e) => e.trim());
+		return console.log("defaultValue", t), t === "" ? null : {
+			headers: ["Name", "Age"],
+			rows: [["Frances", "42"]]
+		};
 	}
 	isBuilderPreview() {
 		return !!(this.builderMode || this.options && this.options.builder);

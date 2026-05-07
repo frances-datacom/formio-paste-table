@@ -14868,9 +14868,10 @@ var BCFormioPasteTable = function (e, t) {
         get: function get() {
           var e;
           var t = ((e = this.component.defaultValue) == null ? "" : e).trim();
-          return console.log("defaultValue", t), t === "" ? null : t.split(",").map(function (e) {
-            return e.trim();
-          });
+          return console.log("defaultValue", t), t === "" ? null : {
+            headers: ["Name", "Age"],
+            rows: [["Frances", "42"]]
+          };
         }
       }, {
         key: "isBuilderPreview",

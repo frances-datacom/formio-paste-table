@@ -56,7 +56,10 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private _initAttemptId;
     private _selectedRow;
     static schema(...extend: any[]): any;
-    get defaultValue(): any;
+    get defaultValue(): {
+        headers: string[];
+        rows: string[][];
+    } | null;
     private isBuilderPreview;
     private isReadOnlyMode;
     private getMaxRows;
