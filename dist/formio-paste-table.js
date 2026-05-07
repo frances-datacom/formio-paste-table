@@ -10271,6 +10271,10 @@ var An = class extends Q {
 			validate: { required: !0 }
 		}, ...e);
 	}
+	get defaultValue() {
+		let e = this.component.defaultValue.trim();
+		return console.log("defaultValue", e), e === "" ? null : e.split(",").map((e) => e.trim());
+	}
 	isBuilderPreview() {
 		return !!(this.builderMode || this.options && this.options.builder);
 	}

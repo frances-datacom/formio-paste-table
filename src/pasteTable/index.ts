@@ -46,6 +46,7 @@ type PasteTableSchema = {
     [key: string]: any;
   };
   disabled?: boolean;
+  defaultValue?: any;
   [key: string]: any;
 };
 
@@ -64,6 +65,7 @@ interface BaseComponentInstance {
   triggerChange(): void;
 
   dataValue: unknown;
+  defaultValue: unknown;
 
   loadRefs(element: HTMLElement, refs: Record<string, string>): void;
 
@@ -105,6 +107,17 @@ export default class PasteTableComponent
       },
       ...extend,
     );
+  }
+
+  get defaultValue() {
+    let defaultValue = this.component.defaultValue.trim();
+    console.log('defaultValue', defaultValue);
+
+    if (defaultValue === '') {
+      return null;
+    }
+
+    return defaultValue.split(',').map((d: string) => d.trim());
   }
 
   private isBuilderPreview(): boolean {

@@ -32,6 +32,7 @@ type PasteTableSchema = {
         [key: string]: any;
     };
     disabled?: boolean;
+    defaultValue?: any;
     [key: string]: any;
 };
 interface BaseComponentInstance {
@@ -39,6 +40,7 @@ interface BaseComponentInstance {
     options?: Record<string, any>;
     triggerChange(): void;
     dataValue: unknown;
+    defaultValue: unknown;
     loadRefs(element: HTMLElement, refs: Record<string, string>): void;
     render(template: string): string;
     attach(element: HTMLElement): Promise<void> | void;
@@ -54,6 +56,7 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private _initAttemptId;
     private _selectedRow;
     static schema(...extend: any[]): any;
+    get defaultValue(): any;
     private isBuilderPreview;
     private isReadOnlyMode;
     private getMaxRows;

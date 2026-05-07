@@ -14864,6 +14864,14 @@ var BCFormioPasteTable = function (e, t) {
       }
       _inherits($, _Mn);
       return _createClass($, [{
+        key: "defaultValue",
+        get: function get() {
+          var e = this.component.defaultValue.trim();
+          return console.log("defaultValue", e), e === "" ? null : e.split(",").map(function (e) {
+            return e.trim();
+          });
+        }
+      }, {
         key: "isBuilderPreview",
         value: function isBuilderPreview() {
           return !!(this.builderMode || this.options && this.options.builder);
