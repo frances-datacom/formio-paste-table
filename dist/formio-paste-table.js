@@ -10272,8 +10272,9 @@ var An = class extends Q {
 		}, ...e);
 	}
 	get defaultValue() {
-		let e = this.component.defaultValue.trim();
-		return console.log("defaultValue", e), e === "" ? null : e.split(",").map((e) => e.trim());
+		var e;
+		let t = ((e = this.component.defaultValue) == null ? "" : e).trim();
+		return console.log("defaultValue", t), t === "" ? null : t.split(",").map((e) => e.trim());
 	}
 	isBuilderPreview() {
 		return !!(this.builderMode || this.options && this.options.builder);

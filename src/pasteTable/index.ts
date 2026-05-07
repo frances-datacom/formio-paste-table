@@ -110,7 +110,7 @@ export default class PasteTableComponent
   }
 
   get defaultValue() {
-    let defaultValue = this.component.defaultValue.trim();
+    let defaultValue = (this.component.defaultValue ?? '').trim();
     console.log('defaultValue', defaultValue);
 
     if (defaultValue === '') {

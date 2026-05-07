@@ -14866,8 +14866,9 @@ var BCFormioPasteTable = function (e, t) {
       return _createClass($, [{
         key: "defaultValue",
         get: function get() {
-          var e = this.component.defaultValue.trim();
-          return console.log("defaultValue", e), e === "" ? null : e.split(",").map(function (e) {
+          var e;
+          var t = ((e = this.component.defaultValue) == null ? "" : e).trim();
+          return console.log("defaultValue", t), t === "" ? null : t.split(",").map(function (e) {
             return e.trim();
           });
         }
