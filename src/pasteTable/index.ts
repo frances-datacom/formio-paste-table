@@ -1,7 +1,7 @@
 /** @format */
 
-import { Components } from 'formiojs';
-import { TabulatorFull as Tabulator } from 'tabulator-tables';
+import {Components} from 'formiojs';
+import {TabulatorFull as Tabulator} from 'tabulator-tables';
 import 'tabulator-tables/dist/css/tabulator.min.css';
 
 type PasteTableValue = {
@@ -60,11 +60,17 @@ const BaseComponent = Components.components.base;
 interface BaseComponentInstance {
   component: PasteTableSchema;
   options?: Record<string, any>;
+
   triggerChange(): void;
+
   dataValue: unknown;
+
   loadRefs(element: HTMLElement, refs: Record<string, string>): void;
+
   render(template: string): string;
+
   attach(element: HTMLElement): Promise<void> | void;
+
   detach(): void;
 }
 
@@ -72,8 +78,7 @@ export default class PasteTableComponent
   extends (BaseComponent as unknown as new (
     ...args: unknown[]
   ) => BaseComponentInstance)
-  implements BaseComponentInstance
-{
+  implements BaseComponentInstance {
   declare refs: PasteTableRefs;
 
   private _table: Tabulator | null = null;
@@ -100,136 +105,6 @@ export default class PasteTableComponent
       },
       ...extend,
     );
-  }
-
-  static get builderInfo() {
-    return {
-      title: 'Paste Table',
-      icon: 'table',
-      group: 'basic',
-      weight: 70,
-      schema: PasteTableComponent.schema(),
-    };
-  }
-
-  static editForm() {
-    return {
-      components: [
-        {
-          type: 'tabs',
-          key: 'tabs',
-          components: [
-            {
-              label: 'Display',
-              key: 'display',
-              components: [
-                {
-                  type: 'textfield',
-                  key: 'label',
-                  label: 'Label',
-                  input: true,
-                },
-                {
-                  type: 'textfield',
-                  key: 'key',
-                  label: 'Property Name',
-                  input: true,
-                },
-                {
-                  type: 'checkbox',
-                  key: 'validate.required',
-                  label: 'Required',
-                  input: true,
-                  defaultValue: true,
-                },
-                {
-                  type: 'number',
-                  key: 'maxRows',
-                  label: 'Maximum number of Rows in the table',
-                  input: true,
-                  defaultValue: 10,
-                  validate: {
-                    min: 1,
-                    integer: true,
-                  },
-                },
-                {
-                  type: 'textfield',
-                  key: 'customMessage',
-                  label: 'Custom error message',
-                  input: true,
-                  defaultValue: 'Add table content to continue.',
-                },
-                {
-                  type: 'textarea',
-                  key: 'userInformation',
-                  label: 'User Information',
-                  input: true,
-                  rows: 3,
-                },
-                {
-                  type: 'datagrid',
-                  key: 'tableHeaders',
-                  label: 'Table Column Headers',
-                  input: true,
-                  addAnother: 'Add Header',
-                  components: [
-                    {
-                      type: 'textfield',
-                      key: 'value',
-                      label: 'Header Name',
-                      input: true,
-                    },
-                    {
-                      type: 'number',
-                      key: 'maxChars',
-                      label: 'Maximum characters allowed',
-                      input: true,
-                      defaultValue: 20,
-                      validate: {
-                        min: 1,
-                        integer: true,
-                      },
-                    },
-                    {
-                      type: 'select',
-                      key: 'dataType',
-                      label: 'Data type allowed',
-                      input: true,
-                      defaultValue: 'alphabet',
-                      dataSrc: 'values',
-                      data: {
-                        values: [
-                          { label: 'Alphabet', value: 'alphabet' },
-                          { label: 'Numeric', value: 'numeric' },
-                          {
-                            label: 'Alphabet and Numeric',
-                            value: 'alphanumeric',
-                          },
-                          { label: 'Email', value: 'email' },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-            {
-              label: 'API',
-              key: 'api',
-              components: [
-                {
-                  type: 'checkbox',
-                  key: 'input',
-                  label: 'Input',
-                  input: true,
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    };
   }
 
   private isBuilderPreview(): boolean {
@@ -268,10 +143,6 @@ export default class PasteTableComponent
     const info = this.component.userInformation;
     return info && String(info).trim() ? String(info).trim() : '';
   }
-
-  // private getInfoMessage(): string {
-  //   return `Paste spreadsheet data directly into the table below. Maximum allowed rows: ${this.getMaxRows()}. Incomplete rows are not allowed.`;
-  // }
 
   private getConfiguredColumnRules(): PasteTableColumnRule[] {
     return (this.component.tableHeaders || [])
@@ -323,7 +194,6 @@ export default class PasteTableComponent
 
   render() {
     const labelText = this.component.label ? String(this.component.label) : '';
-    console.log('labelText', labelText);
     const isRequired = !!(
       this.component.validate && this.component.validate.required
     );
@@ -332,20 +202,18 @@ export default class PasteTableComponent
     return super.render(`
       <div class="paste-table-root">
         ${
-          labelText
-            ? `<label class="control-label paste-table-label" ref="labelEl">
+      labelText
+        ? `<label class="control-label paste-table-label" ref="labelEl">
                 ${labelText}${isRequired ? ' <span class="field-required">*</span>' : ''}
               </label>`
-            : ''
-        }
+        : ''
+    }
 
         ${
-          userInformation
-            ? `<div class="paste-table-userinfo" ref="userInfoEl">${userInformation}</div>`
-            : ''
-        }
-
-       
+      userInformation
+        ? `<div class="paste-table-userinfo" ref="userInfoEl">${userInformation}</div>`
+        : ''
+    }      
 
         <div class="paste-error text-danger" ref="errorMsg" style="display:none;"></div>
 
@@ -354,15 +222,15 @@ export default class PasteTableComponent
         </div>
 
          ${
-           !this.isReadOnlyMode()
-             ? `<div class="paste-table-add-row-footer">
+      !this.isReadOnlyMode()
+        ? `<div class="paste-table-add-row-footer">
               <button type="button" class="btn btn-secondary btn-sm paste-table-add-row-btn" ref="addRowBtn">+ Add Row</button>
               <button type="button" class="btn btn-warning btn-sm paste-table-delete-row-btn" ref="deleteRowBtn" style="display:none;">Delete Row</button>
               <div class="paste-table-max-row-msg text-muted" ref="maxRowMsg" style="display:none;">Maximum row limit of ${this.getMaxRows()} has been reached.</div>
               <div class="paste-table-delete-hint text-muted" ref="deleteHint">Select a row, then click Delete row.</div>
             </div>`
-             : ''
-         }
+        : ''
+    }
       </div>
     `);
   }
@@ -439,6 +307,7 @@ export default class PasteTableComponent
 
     return super.detach();
   }
+
   private handleTableKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Delete') {
       e.preventDefault();
@@ -457,6 +326,7 @@ export default class PasteTableComponent
       this.handleDeleteRow();
     }
   };
+
   private scheduleSafeInit(attemptId: number, retryCount: number) {
     const self = this;
 
@@ -736,7 +606,7 @@ export default class PasteTableComponent
     const trimmedValue = value == null ? '' : String(value);
 
     if (trimmedValue === '') {
-      return { isValid: true, message: '', severity: 'none' };
+      return {isValid: true, message: '', severity: 'none'};
     }
 
     if (this.containsUnsafePattern(trimmedValue)) {
@@ -772,7 +642,7 @@ export default class PasteTableComponent
       };
     }
 
-    return { isValid: true, message: '', severity: 'none' };
+    return {isValid: true, message: '', severity: 'none'};
   }
 
   private containsUnsafePattern(value: string): boolean {
@@ -1049,42 +919,30 @@ export default class PasteTableComponent
         editor: isReadOnly
           ? undefined
           : function (cell: any, onRendered: any, success: any, cancel: any) {
-              return self.createInputEditor(
-                cell,
-                onRendered,
-                success,
-                cancel,
-                rules,
-              );
-            },
+            return self.createInputEditor(
+              cell,
+              onRendered,
+              success,
+              cancel,
+              rules,
+            );
+          },
       };
     });
-    // const isTouchDevice =
-    //   typeof window !== 'undefined' &&
-    //   ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    const isTouchDevice =
-      typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
-    console.log('isTouchDevice', isTouchDevice);
+
+    const isTouchDevice = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
 
     const tableOptions: any = {
       data: initialData,
       layout: 'fitDataStretch',
-      //layout: 'fitData',
-      //renderHorizontal: 'virtual',
-      //renderHorizontal: headers.length > 10 ? 'virtual' : 'basic',
       renderHorizontal: 'basic',
-
       selectableRange: !isReadOnly && !isTouchDevice ? 1 : false,
-
       selectableRangeColumns: !isReadOnly && !isTouchDevice,
       selectableRangeRows: !isReadOnly && !isTouchDevice,
-      //selectableRangeClearCells: !isReadOnly,
       selectableRangeClearCells: false,
       selectableRangeAutoFocus: false,
       selectableRangeBlurEditOnNavigate: false,
-
       editTriggerEvent: 'click',
-
       clipboard: false,
 
       rowHeader: {
@@ -1120,7 +978,6 @@ export default class PasteTableComponent
           return;
         }
 
-        //this.handleRowSelection(cell.getRow());
         cell.edit(true);
       });
 
@@ -1222,7 +1079,7 @@ export default class PasteTableComponent
       }
     }
 
-    return { isValid: true, message: '', severity: 'none' };
+    return {isValid: true, message: '', severity: 'none'};
   }
 
   private appendRowsFromClipboard(headers: string[], dataRows: string[][]) {
@@ -1289,6 +1146,7 @@ export default class PasteTableComponent
       this.updateDeleteRowButtonVisibility();
     });
   }
+
   private handleRowSelection = (row: any) => {
     if (this.isReadOnlyMode()) return;
 
@@ -1356,6 +1214,7 @@ export default class PasteTableComponent
       if (this.refs.maxRowMsg) this.refs.maxRowMsg.style.display = 'none';
     }
   }
+
   private clearSelectedRow() {
     if (this._selectedRow) {
       try {
@@ -1371,6 +1230,7 @@ export default class PasteTableComponent
     this._selectedRow = null;
     this.updateDeleteRowButtonVisibility();
   }
+
   private handleDeleteRow = () => {
     if (!this._table || !this._selectedRow || this.isReadOnlyMode()) {
       return;
@@ -1395,6 +1255,7 @@ export default class PasteTableComponent
         this.updateDeleteRowButtonVisibility();
       });
   };
+
   private updateDeleteRowButtonVisibility() {
     if (!this.refs.deleteRowBtn) return;
 
@@ -1402,6 +1263,7 @@ export default class PasteTableComponent
     this.refs.deleteRowBtn.style.display =
       !this.isReadOnlyMode() && hasSelection ? '' : 'none';
   }
+
   private showError(msg: string) {
     if (!this.refs.errorMsg) return;
     this.refs.errorMsg.textContent = msg;

@@ -10192,7 +10192,7 @@ var An = class extends Q {
 	constructor(e, t, n) {
 		super(e, t, Y);
 	}
-}, jn = e.components.base, $ = class e extends jn {
+}, jn = e.components.base, $ = class extends jn {
 	constructor(...e) {
 		super(...e), i(this, "_table", null), i(this, "_tableValue", null), i(this, "_isMutatingTable", !1), i(this, "_isDetached", !1), i(this, "_initAttemptId", 0), i(this, "_selectedRow", null), i(this, "handleTableKeyDown", (e) => {
 			e.key === "Delete" && (e.preventDefault(), e.stopPropagation());
@@ -10271,132 +10271,6 @@ var An = class extends Q {
 			validate: { required: !0 }
 		}, ...e);
 	}
-	static get builderInfo() {
-		return {
-			title: "Paste Table",
-			icon: "table",
-			group: "basic",
-			weight: 70,
-			schema: e.schema()
-		};
-	}
-	static editForm() {
-		return { components: [{
-			type: "tabs",
-			key: "tabs",
-			components: [{
-				label: "Display",
-				key: "display",
-				components: [
-					{
-						type: "textfield",
-						key: "label",
-						label: "Label",
-						input: !0
-					},
-					{
-						type: "textfield",
-						key: "key",
-						label: "Property Name",
-						input: !0
-					},
-					{
-						type: "checkbox",
-						key: "validate.required",
-						label: "Required",
-						input: !0,
-						defaultValue: !0
-					},
-					{
-						type: "number",
-						key: "maxRows",
-						label: "Maximum number of Rows in the table",
-						input: !0,
-						defaultValue: 10,
-						validate: {
-							min: 1,
-							integer: !0
-						}
-					},
-					{
-						type: "textfield",
-						key: "customMessage",
-						label: "Custom error message",
-						input: !0,
-						defaultValue: "Add table content to continue."
-					},
-					{
-						type: "textarea",
-						key: "userInformation",
-						label: "User Information",
-						input: !0,
-						rows: 3
-					},
-					{
-						type: "datagrid",
-						key: "tableHeaders",
-						label: "Table Column Headers",
-						input: !0,
-						addAnother: "Add Header",
-						components: [
-							{
-								type: "textfield",
-								key: "value",
-								label: "Header Name",
-								input: !0
-							},
-							{
-								type: "number",
-								key: "maxChars",
-								label: "Maximum characters allowed",
-								input: !0,
-								defaultValue: 20,
-								validate: {
-									min: 1,
-									integer: !0
-								}
-							},
-							{
-								type: "select",
-								key: "dataType",
-								label: "Data type allowed",
-								input: !0,
-								defaultValue: "alphabet",
-								dataSrc: "values",
-								data: { values: [
-									{
-										label: "Alphabet",
-										value: "alphabet"
-									},
-									{
-										label: "Numeric",
-										value: "numeric"
-									},
-									{
-										label: "Alphabet and Numeric",
-										value: "alphanumeric"
-									},
-									{
-										label: "Email",
-										value: "email"
-									}
-								] }
-							}
-						]
-					}
-				]
-			}, {
-				label: "API",
-				key: "api",
-				components: [{
-					type: "checkbox",
-					key: "input",
-					label: "Input",
-					input: !0
-				}]
-			}]
-		}] };
-	}
 	isBuilderPreview() {
 		return !!(this.builderMode || this.options && this.options.builder);
 	}
@@ -10438,18 +10312,14 @@ var An = class extends Q {
 		return e === "alphabet" || e === "numeric" || e === "alphanumeric" || e === "email";
 	}
 	render() {
-		let e = this.component.label ? String(this.component.label) : "";
-		console.log("labelText", e);
-		let t = !!(this.component.validate && this.component.validate.required), n = this.getUserInformation();
+		let e = this.component.label ? String(this.component.label) : "", t = !!(this.component.validate && this.component.validate.required), n = this.getUserInformation();
 		return super.render(`
       <div class="paste-table-root">
         ${e ? `<label class="control-label paste-table-label" ref="labelEl">
                 ${e}${t ? " <span class=\"field-required\">*</span>" : ""}
               </label>` : ""}
 
-        ${n ? `<div class="paste-table-userinfo" ref="userInfoEl">${n}</div>` : ""}
-
-       
+        ${n ? `<div class="paste-table-userinfo" ref="userInfoEl">${n}</div>` : ""}      
 
         <div class="paste-error text-danger" ref="errorMsg" style="display:none;"></div>
 
@@ -10711,9 +10581,7 @@ var An = class extends Q {
 			editor: n ? void 0 : function(t, n, i, a) {
 				return r.createInputEditor(t, n, i, a, e);
 			}
-		})), o = typeof navigator < "u" && navigator.maxTouchPoints > 0;
-		console.log("isTouchDevice", o);
-		let s = {
+		})), o = typeof navigator < "u" && navigator.maxTouchPoints > 0, s = {
 			data: i,
 			layout: "fitDataStretch",
 			renderHorizontal: "basic",
