@@ -10275,8 +10275,8 @@ var An = class extends Q {
 		var e;
 		let t = ((e = this.component.defaultValue) == null ? "" : e).trim();
 		return console.log("defaultValue", t), t === "" ? null : {
-			headers: ["Name", "Age"],
-			rows: [["Frances", "42"]]
+			headers: this.getConfiguredColumnRules().map((e) => e.header),
+			rows: [t.split(",").map((e) => e.trim())]
 		};
 	}
 	isBuilderPreview() {

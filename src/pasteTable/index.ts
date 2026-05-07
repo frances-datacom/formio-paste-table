@@ -117,10 +117,10 @@ export default class PasteTableComponent
       return null;
     }
 
-    const initialObject: PasteTableValue = {headers: ['Name', 'Age'], rows: [['Frances', '42']]};
+    const headers = this.getConfiguredColumnRules().map((rule) => rule.header);
+    const initialObject: PasteTableValue = {headers: headers, rows: [defaultValue.split(',').map((d: string) => d.trim())]};
 
     return initialObject;
-    //return defaultValue.split(',').map((d: string) => d.trim());
   }
 
   private isBuilderPreview(): boolean {
