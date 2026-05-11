@@ -10232,8 +10232,8 @@ var An = class extends Q {
 				} catch (e) {}
 				this._selectedRow = e;
 				try {
-					let t = e.getElement();
-					t && t.classList.add("paste-table-row-selected");
+					var t;
+					(t = e.getElement()) == null || t.classList.add("paste-table-row-selected");
 				} catch (e) {}
 				this.updateDeleteRowButtonVisibility();
 			}
@@ -10257,19 +10257,6 @@ var An = class extends Q {
 				this._isMutatingTable = !1, this._selectedRow = null, this.updateDeleteRowButtonVisibility();
 			});
 		});
-	}
-	static schema(...e) {
-		return jn.schema({
-			type: "pasteTable",
-			label: "Paste Table",
-			key: "pasteTable",
-			input: !0,
-			tableHeaders: [],
-			maxRows: 10,
-			customMessage: "Add table content to continue.",
-			userInformation: "",
-			validate: { required: !0 }
-		}, ...e);
 	}
 	get defaultValue() {
 		var e;
@@ -10327,7 +10314,7 @@ var An = class extends Q {
                 ${e}${t ? " <span class=\"field-required\">*</span>" : ""}
               </label>` : ""}
 
-        ${n ? `<div class="paste-table-userinfo" ref="userInfoEl">${n}</div>` : ""}      
+        ${n ? `<div class="paste-table-userinfo" ref="userInfoEl">${n}</div>` : ""}       
 
         <div class="paste-error text-danger" ref="errorMsg" style="display:none;"></div>
 
@@ -10418,7 +10405,7 @@ var An = class extends Q {
 		return t && !r || i ? this.getValidationMessage() : "";
 	}
 	getEnteredRowsFromValue(e) {
-		return !e || !Array.isArray(e.rows) ? [] : e.rows.map((e) => Array.isArray(e) ? e.map((e) => e == null ? "" : String(e)) : []).filter((e) => e.some((e) => String(e).trim() !== ""));
+		return !e || !Array.isArray(e.rows) ? [] : e.rows.map((e) => Array.isArray(e) ? e.map((e) => e === null ? "" : String(e)) : []).filter((e) => e.some((e) => String(e).trim() !== ""));
 	}
 	isCompleteRowArray(e) {
 		if (!e.length) return !1;
@@ -10432,9 +10419,7 @@ var An = class extends Q {
 	}
 	createBlankRow(e) {
 		let t = {};
-		return e.forEach((e) => {
-			t[e] = "";
-		}), t;
+		return e.forEach((e) => t[e] = ""), t;
 	}
 	parseClipboard(e) {
 		return e.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").filter((e) => e.trim() !== "").map((e) => e.split("	").map((e) => e.trim()));
@@ -10442,14 +10427,14 @@ var An = class extends Q {
 	mapRowObjectToArray(e, t) {
 		return t.map((t) => {
 			let n = e[t];
-			return n == null ? "" : String(n);
+			return n === null ? "" : String(n);
 		});
 	}
 	mapRowArrayToObject(e, t) {
 		let n = {};
 		return t.forEach((t, r) => {
 			var i;
-			n[t] = (i = e[r]) == null ? "" : i;
+			return n[t] = (i = e[r]) == null ? "" : i;
 		}), n;
 	}
 	setStoredValue(e, t) {
@@ -10476,7 +10461,7 @@ var An = class extends Q {
 		});
 	}
 	validateCellValue(e, t, n) {
-		let r = e == null ? "" : String(e);
+		let r = e === null ? "" : String(e);
 		return r === "" ? {
 			isValid: !0,
 			message: "",
@@ -10484,11 +10469,11 @@ var An = class extends Q {
 		} : this.containsUnsafePattern(r) ? {
 			isValid: !1,
 			severity: "security",
-			message: `"${t.header}" contains characters that aren’t supported.`
+			message: `"${t.header}" contains characters that aren't supported.`
 		} : r.length > t.maxChars ? {
 			isValid: !1,
 			severity: "business",
-			message: ` "${t.header}"  can be no longer than ${t.maxChars} characters.`
+			message: ` "${t.header}" can be no longer than ${t.maxChars} characters.`
 		} : this.matchesDataType(r, t.dataType) ? {
 			isValid: !0,
 			message: "",
@@ -10496,14 +10481,19 @@ var An = class extends Q {
 		} : {
 			isValid: !1,
 			severity: "business",
-			message: `"${t.header}"  must be a (${this.getDataTypeLabel(t.dataType)}).`
+			message: `"${t.header}" must be a (${this.getDataTypeLabel(t.dataType)}).`
 		};
 	}
 	containsUnsafePattern(e) {
 		return /<|>|javascript:|vbscript:|data:text\/html|on\w+\s*=|<script|<img|<svg|<iframe|&lt;|&gt;/i.test(e);
 	}
 	getDataTypeLabel(e) {
-		return e === "alphabet" ? "Alphabet" : e === "numeric" ? "Numeric" : e === "alphanumeric" ? "Alphabet and Numeric" : "Email";
+		switch (e) {
+			case "alphabet": return "Alphabet";
+			case "numeric": return "Numeric";
+			case "alphanumeric": return "Alphabet and Numeric";
+			default: return "Email";
+		}
 	}
 	matchesDataType(e, t) {
 		return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(e) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(e) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(e) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(e);
@@ -10520,7 +10510,7 @@ var An = class extends Q {
 		}));
 	}
 	createInputEditor(e, t, n, r, i) {
-		let a = document.createElement("input"), o = e.getValue() == null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
+		let a = document.createElement("input"), o = e.getValue() === null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
 		a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function() {
 			setTimeout(() => {
 				a.focus();
@@ -10674,8 +10664,8 @@ var An = class extends Q {
 	}
 	clearSelectedRow() {
 		if (this._selectedRow) try {
-			let e = this._selectedRow.getElement();
-			e && e.classList.remove("paste-table-row-selected");
+			var e;
+			(e = this._selectedRow.getElement()) == null || e.remove("paste-table-row-selected");
 		} catch (e) {}
 		this._selectedRow = null, this.updateDeleteRowButtonVisibility();
 	}

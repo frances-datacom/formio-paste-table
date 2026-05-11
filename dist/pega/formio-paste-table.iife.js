@@ -14831,8 +14831,8 @@ var BCFormioPasteTable = function (e, t) {
             } catch (e) {}
             _this242._selectedRow = e;
             try {
-              var _t30 = e.getElement();
-              _t30 && _t30.classList.add("paste-table-row-selected");
+              var t;
+              (t = e.getElement()) == null || t.classList.add("paste-table-row-selected");
             } catch (e) {}
             _this242.updateDeleteRowButtonVisibility();
           }
@@ -14911,9 +14911,9 @@ var BCFormioPasteTable = function (e, t) {
           var _this243 = this;
           return (this.component.tableHeaders || []).map(function (e) {
             if (_typeof(e) == "string") {
-              var _t31 = e.trim();
-              return _t31 ? {
-                header: _t31,
+              var _t30 = e.trim();
+              return _t30 ? {
+                header: _t30,
                 maxChars: 20,
                 dataType: "alphabet"
               } : null;
@@ -14941,7 +14941,7 @@ var BCFormioPasteTable = function (e, t) {
           var e = this.component.label ? String(this.component.label) : "",
             t = !!(this.component.validate && this.component.validate.required),
             n = this.getUserInformation();
-          return _superPropGet($, "render", this, 3)(["\n      <div class=\"paste-table-root\">\n        ".concat(e ? "<label class=\"control-label paste-table-label\" ref=\"labelEl\">\n                ".concat(e).concat(t ? " <span class=\"field-required\">*</span>" : "", "\n              </label>") : "", "\n\n        ").concat(n ? "<div class=\"paste-table-userinfo\" ref=\"userInfoEl\">".concat(n, "</div>") : "", "      \n\n        <div class=\"paste-error text-danger\" ref=\"errorMsg\" style=\"display:none;\"></div>\n\n        <div class=\"paste-table-wrap\" style=\"overflow-x: auto; -webkit-overflow-scrolling: touch;\">\n          <div ref=\"tabulatorTarget\"></div>\n        </div>\n\n         ").concat(this.isReadOnlyMode() ? "" : "<div class=\"paste-table-add-row-footer\">\n              <button type=\"button\" class=\"btn btn-secondary btn-sm paste-table-add-row-btn\" ref=\"addRowBtn\">+ Add Row</button>\n              <button type=\"button\" class=\"btn btn-warning btn-sm paste-table-delete-row-btn\" ref=\"deleteRowBtn\" style=\"display:none;\">Delete Row</button>\n              <div class=\"paste-table-max-row-msg text-muted\" ref=\"maxRowMsg\" style=\"display:none;\">Maximum row limit of ".concat(this.getMaxRows(), " has been reached.</div>\n              <div class=\"paste-table-delete-hint text-muted\" ref=\"deleteHint\">Select a row, then click Delete row.</div>\n            </div>"), "\n      </div>\n    ")]);
+          return _superPropGet($, "render", this, 3)(["\n      <div class=\"paste-table-root\">\n        ".concat(e ? "<label class=\"control-label paste-table-label\" ref=\"labelEl\">\n                ".concat(e).concat(t ? " <span class=\"field-required\">*</span>" : "", "\n              </label>") : "", "\n\n        ").concat(n ? "<div class=\"paste-table-userinfo\" ref=\"userInfoEl\">".concat(n, "</div>") : "", "       \n\n        <div class=\"paste-error text-danger\" ref=\"errorMsg\" style=\"display:none;\"></div>\n\n        <div class=\"paste-table-wrap\" style=\"overflow-x: auto; -webkit-overflow-scrolling: touch;\">\n          <div ref=\"tabulatorTarget\"></div>\n        </div>\n\n         ").concat(this.isReadOnlyMode() ? "" : "<div class=\"paste-table-add-row-footer\">\n              <button type=\"button\" class=\"btn btn-secondary btn-sm paste-table-add-row-btn\" ref=\"addRowBtn\">+ Add Row</button>\n              <button type=\"button\" class=\"btn btn-warning btn-sm paste-table-delete-row-btn\" ref=\"deleteRowBtn\" style=\"display:none;\">Delete Row</button>\n              <div class=\"paste-table-max-row-msg text-muted\" ref=\"maxRowMsg\" style=\"display:none;\">Maximum row limit of ".concat(this.getMaxRows(), " has been reached.</div>\n              <div class=\"paste-table-delete-hint text-muted\" ref=\"deleteHint\">Select a row, then click Delete row.</div>\n            </div>"), "\n      </div>\n    ")]);
         }
       }, {
         key: "attach",
@@ -15052,7 +15052,7 @@ var BCFormioPasteTable = function (e, t) {
         value: function getEnteredRowsFromValue(e) {
           return !e || !Array.isArray(e.rows) ? [] : e.rows.map(function (e) {
             return Array.isArray(e) ? e.map(function (e) {
-              return e == null ? "" : String(e);
+              return e === null ? "" : String(e);
             }) : [];
           }).filter(function (e) {
             return e.some(function (e) {
@@ -15084,7 +15084,7 @@ var BCFormioPasteTable = function (e, t) {
         value: function createBlankRow(e) {
           var t = {};
           return e.forEach(function (e) {
-            t[e] = "";
+            return t[e] = "";
           }), t;
         }
       }, {
@@ -15103,7 +15103,7 @@ var BCFormioPasteTable = function (e, t) {
         value: function mapRowObjectToArray(e, t) {
           return t.map(function (t) {
             var n = e[t];
-            return n == null ? "" : String(n);
+            return n === null ? "" : String(n);
           });
         }
       }, {
@@ -15112,7 +15112,7 @@ var BCFormioPasteTable = function (e, t) {
           var n = {};
           return t.forEach(function (t, r) {
             var i;
-            n[t] = (i = e[r]) == null ? "" : i;
+            return n[t] = (i = e[r]) == null ? "" : i;
           }), n;
         }
       }, {
@@ -15158,7 +15158,7 @@ var BCFormioPasteTable = function (e, t) {
       }, {
         key: "validateCellValue",
         value: function validateCellValue(e, t, n) {
-          var r = e == null ? "" : String(e);
+          var r = e === null ? "" : String(e);
           return r === "" ? {
             isValid: !0,
             message: "",
@@ -15166,11 +15166,11 @@ var BCFormioPasteTable = function (e, t) {
           } : this.containsUnsafePattern(r) ? {
             isValid: !1,
             severity: "security",
-            message: "\"".concat(t.header, "\" contains characters that aren\u2019t supported.")
+            message: "\"".concat(t.header, "\" contains characters that aren't supported.")
           } : r.length > t.maxChars ? {
             isValid: !1,
             severity: "business",
-            message: " \"".concat(t.header, "\"  can be no longer than ").concat(t.maxChars, " characters.")
+            message: " \"".concat(t.header, "\" can be no longer than ").concat(t.maxChars, " characters.")
           } : this.matchesDataType(r, t.dataType) ? {
             isValid: !0,
             message: "",
@@ -15178,7 +15178,7 @@ var BCFormioPasteTable = function (e, t) {
           } : {
             isValid: !1,
             severity: "business",
-            message: "\"".concat(t.header, "\"  must be a (").concat(this.getDataTypeLabel(t.dataType), ").")
+            message: "\"".concat(t.header, "\" must be a (").concat(this.getDataTypeLabel(t.dataType), ").")
           };
         }
       }, {
@@ -15189,7 +15189,16 @@ var BCFormioPasteTable = function (e, t) {
       }, {
         key: "getDataTypeLabel",
         value: function getDataTypeLabel(e) {
-          return e === "alphabet" ? "Alphabet" : e === "numeric" ? "Numeric" : e === "alphanumeric" ? "Alphabet and Numeric" : "Email";
+          switch (e) {
+            case "alphabet":
+              return "Alphabet";
+            case "numeric":
+              return "Numeric";
+            case "alphanumeric":
+              return "Alphabet and Numeric";
+            default:
+              return "Email";
+          }
         }
       }, {
         key: "matchesDataType",
@@ -15216,7 +15225,7 @@ var BCFormioPasteTable = function (e, t) {
         key: "createInputEditor",
         value: function createInputEditor(e, t, n, r, i) {
           var a = document.createElement("input"),
-            o = e.getValue() == null ? "" : String(e.getValue()),
+            o = e.getValue() === null ? "" : String(e.getValue()),
             s = String(e.getField() || ""),
             c = this.getRuleByHeader(s, i);
           a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
@@ -15236,9 +15245,9 @@ var BCFormioPasteTable = function (e, t) {
               return;
             }
             if (c) {
-              var _t32 = l.validateCellValue(e, c, "manual");
-              if (!_t32.isValid) {
-                l.showError(_t32.message), _t32.severity === "security" && l.clearComponentToEmpty(), r();
+              var _t31 = l.validateCellValue(e, c, "manual");
+              if (!_t31.isValid) {
+                l.showError(_t31.message), _t31.severity === "security" && l.clearComponentToEmpty(), r();
                 return;
               }
             }
@@ -15423,8 +15432,8 @@ var BCFormioPasteTable = function (e, t) {
         key: "clearSelectedRow",
         value: function clearSelectedRow() {
           if (this._selectedRow) try {
-            var _e563 = this._selectedRow.getElement();
-            _e563 && _e563.classList.remove("paste-table-row-selected");
+            var e;
+            (e = this._selectedRow.getElement()) == null || e.remove("paste-table-row-selected");
           } catch (e) {}
           this._selectedRow = null, this.updateDeleteRowButtonVisibility();
         }
@@ -15454,26 +15463,6 @@ var BCFormioPasteTable = function (e, t) {
         key: "setValue",
         value: function setValue(e) {
           return this._tableValue = e, this.dataValue = e, this._table && this.scheduleSafeHydrate(this._initAttemptId, 0), !0;
-        }
-      }], [{
-        key: "schema",
-        value: function schema() {
-          for (var _len2 = arguments.length, e = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-            e[_key2] = arguments[_key2];
-          }
-          return Mn.schema.apply(Mn, [{
-            type: "pasteTable",
-            label: "Paste Table",
-            key: "pasteTable",
-            input: !0,
-            tableHeaders: [],
-            maxRows: 10,
-            customMessage: "Add table content to continue.",
-            userInformation: "",
-            validate: {
-              required: !0
-            }
-          }].concat(e));
         }
       }]);
     }(Mn);
