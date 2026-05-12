@@ -15206,13 +15206,6 @@ var BCFormioPasteTable = function (e, t) {
           return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(e) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(e) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(e) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(e);
         }
       }, {
-        key: "getRuleByHeader",
-        value: function getRuleByHeader(e, t) {
-          var n = 0;
-          for (n = 0; n < t.length; n += 1) if (t[n].header === e) return t[n];
-          return null;
-        }
-      }, {
         key: "clearComponentToEmpty",
         value: function clearComponentToEmpty() {
           var _this248 = this;
@@ -15220,42 +15213,6 @@ var BCFormioPasteTable = function (e, t) {
           this._tableValue = null, this.dataValue = (e = this.emptyValue) == null ? null : e, this.isBuilderPreview() || this.triggerChange(), this._table && (this._isMutatingTable = !0, this._table.setData([]).finally(function () {
             _this248._isMutatingTable = !1, _this248.clearSelectedRow(), _this248.updateAddRowButtonVisibility(), _this248.updateDeleteRowButtonVisibility();
           }));
-        }
-      }, {
-        key: "createInputEditor",
-        value: function createInputEditor(e, t, n, r, i) {
-          var a = document.createElement("input"),
-            o = e.getValue() === null ? "" : String(e.getValue()),
-            s = String(e.getField() || ""),
-            c = this.getRuleByHeader(s, i);
-          a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function () {
-            setTimeout(function () {
-              a.focus();
-            }, 0);
-          }), a.addEventListener("mousedown", function (e) {
-            "ontouchstart" in window || e.stopPropagation();
-          }), a.addEventListener("click", function (e) {
-            "ontouchstart" in window || e.stopPropagation();
-          });
-          var l = this;
-          function u() {
-            var e = a.value;
-            if (e === o) {
-              r();
-              return;
-            }
-            if (c) {
-              var _t31 = l.validateCellValue(e, c, "manual");
-              if (!_t31.isValid) {
-                l.showError(_t31.message), _t31.severity === "security" && l.clearComponentToEmpty(), r();
-                return;
-              }
-            }
-            l.hideError(), n(e);
-          }
-          return a.addEventListener("blur", u), a.addEventListener("keydown", function (e) {
-            e.key === "Enter" && u(), e.key === "Escape" && r();
-          }), a;
         }
       }, {
         key: "buildRowsFromValue",
@@ -15301,7 +15258,7 @@ var BCFormioPasteTable = function (e, t) {
               return e.header;
             });
           if (!this.refs.tabulatorTarget || this._isDetached) return;
-          if (!t.length) {
+          if (!e.length) {
             this.showError("Please configure at least one table header in the builder.");
             return;
           }
@@ -15312,25 +15269,40 @@ var BCFormioPasteTable = function (e, t) {
             this._table = null;
           }
           var n = this.isReadOnlyMode(),
-            r = this,
-            i = this.getInitialTableData(t, n),
-            a = t.map(function (t) {
+            r = this.getInitialTableData(t, n),
+            i = e.map(function (e) {
+              var t = "input",
+                n;
+              switch (e.dataType) {
+                case "numeric":
+                  t = "number";
+                  break;
+                case "alphanumeric":
+                  n = "regex:/^[A-Za-z0-9\\s'\u2019-]+$/";
+                  break;
+                case "email":
+                  n = "regex:/^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/";
+                  break;
+                default:
+                  n = "regex:/^[A-Za-z\\s'\u2019-]+$/";
+                  break;
+              }
               return {
-                title: t,
-                field: t,
-                editor: n ? void 0 : function (t, n, i, a) {
-                  return r.createInputEditor(t, n, i, a, e);
-                }
+                title: e.header,
+                field: e.header,
+                maxLength: e.maxChars,
+                validator: n,
+                editor: t
               };
             }),
-            o = (typeof navigator === "undefined" ? "undefined" : _typeof(navigator)) < "u" && navigator.maxTouchPoints > 0,
-            s = {
-              data: i,
+            a = (typeof navigator === "undefined" ? "undefined" : _typeof(navigator)) < "u" && navigator.maxTouchPoints > 0,
+            o = {
+              data: r,
               layout: "fitDataStretch",
               renderHorizontal: "basic",
-              selectableRange: !n && !o ? 1 : !1,
-              selectableRangeColumns: !n && !o,
-              selectableRangeRows: !n && !o,
+              selectableRange: !n && !a ? 1 : !1,
+              selectableRangeColumns: !n && !a,
+              selectableRangeRows: !n && !a,
               selectableRangeClearCells: !1,
               selectableRangeAutoFocus: !1,
               selectableRangeBlurEditOnNavigate: !1,
@@ -15349,12 +15321,12 @@ var BCFormioPasteTable = function (e, t) {
                 resizable: "header",
                 width: 180
               },
-              columns: a
+              columns: i
             };
-          this._table = new jn(this.refs.tabulatorTarget, s), n || (this._table.on("cellClick", function (e, t) {
-            o || _this251.handleRowSelection(t.getRow());
+          this._table = new jn(this.refs.tabulatorTarget, o), n || (this._table.on("cellClick", function (e, t) {
+            a || _this251.handleRowSelection(t.getRow());
           }), this._table.on("cellTap", function (e, t) {
-            o && t.edit(!0);
+            a && t.edit(!0);
           }), this._table.on("rowClick", function (e, t) {
             _this251.handleRowSelection(t);
           }), this._table.on("rowTap", function (e, t) {

@@ -10498,47 +10498,11 @@ var An = class extends Q {
 	matchesDataType(e, t) {
 		return t === "alphabet" ? /^[A-Za-z\s'’-]+$/.test(e) : t === "numeric" ? /^\d+(\.\d{1,2})?$/.test(e) : t === "alphanumeric" ? /^[A-Za-z0-9\s'’-]+$/.test(e) : /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(e);
 	}
-	getRuleByHeader(e, t) {
-		let n = 0;
-		for (n = 0; n < t.length; n += 1) if (t[n].header === e) return t[n];
-		return null;
-	}
 	clearComponentToEmpty() {
 		var e;
 		this._tableValue = null, this.dataValue = (e = this.emptyValue) == null ? null : e, this.isBuilderPreview() || this.triggerChange(), this._table && (this._isMutatingTable = !0, this._table.setData([]).finally(() => {
 			this._isMutatingTable = !1, this.clearSelectedRow(), this.updateAddRowButtonVisibility(), this.updateDeleteRowButtonVisibility();
 		}));
-	}
-	createInputEditor(e, t, n, r, i) {
-		let a = document.createElement("input"), o = e.getValue() === null ? "" : String(e.getValue()), s = String(e.getField() || ""), c = this.getRuleByHeader(s, i);
-		a.setAttribute("type", "text"), a.value = o, a.style.padding = "8px 10px", a.style.minHeight = "36px", a.style.width = "100%", a.style.height = "100%", a.style.boxSizing = "border-box", a.style.border = "none", a.style.outline = "none", a.style.background = "transparent", t(function() {
-			setTimeout(() => {
-				a.focus();
-			}, 0);
-		}), a.addEventListener("mousedown", function(e) {
-			"ontouchstart" in window || e.stopPropagation();
-		}), a.addEventListener("click", function(e) {
-			"ontouchstart" in window || e.stopPropagation();
-		});
-		let l = this;
-		function u() {
-			let e = a.value;
-			if (e === o) {
-				r();
-				return;
-			}
-			if (c) {
-				let t = l.validateCellValue(e, c, "manual");
-				if (!t.isValid) {
-					l.showError(t.message), t.severity === "security" && l.clearComponentToEmpty(), r();
-					return;
-				}
-			}
-			l.hideError(), n(e);
-		}
-		return a.addEventListener("blur", u), a.addEventListener("keydown", function(e) {
-			e.key === "Enter" && u(), e.key === "Escape" && r();
-		}), a;
 	}
 	buildRowsFromValue(e, t, n) {
 		return e && Array.isArray(e.rows) && e.rows.length ? e.rows.slice(0, this.getMaxRows()).map((e) => this.mapRowArrayToObject(e, t)) : !n && t.length ? [this.createBlankRow(t)] : [];
@@ -10563,7 +10527,7 @@ var An = class extends Q {
 	initTableFromConfiguredHeaders() {
 		let e = this.getConfiguredColumnRules(), t = e.map((e) => e.header);
 		if (!this.refs.tabulatorTarget || this._isDetached) return;
-		if (!t.length) {
+		if (!e.length) {
 			this.showError("Please configure at least one table header in the builder.");
 			return;
 		}
@@ -10573,19 +10537,36 @@ var An = class extends Q {
 			} catch (e) {}
 			this._table = null;
 		}
-		let n = this.isReadOnlyMode(), r = this, i = this.getInitialTableData(t, n), a = t.map((t) => ({
-			title: t,
-			field: t,
-			editor: n ? void 0 : function(t, n, i, a) {
-				return r.createInputEditor(t, n, i, a, e);
+		let n = this.isReadOnlyMode(), r = this.getInitialTableData(t, n), i = e.map((e) => {
+			let t = "input", n;
+			switch (e.dataType) {
+				case "numeric":
+					t = "number";
+					break;
+				case "alphanumeric":
+					n = "regex:/^[A-Za-z0-9\\s'’-]+$/";
+					break;
+				case "email":
+					n = "regex:/^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/";
+					break;
+				default:
+					n = "regex:/^[A-Za-z\\s'’-]+$/";
+					break;
 			}
-		})), o = typeof navigator < "u" && navigator.maxTouchPoints > 0, s = {
-			data: i,
+			return {
+				title: e.header,
+				field: e.header,
+				maxLength: e.maxChars,
+				validator: n,
+				editor: t
+			};
+		}), a = typeof navigator < "u" && navigator.maxTouchPoints > 0, o = {
+			data: r,
 			layout: "fitDataStretch",
 			renderHorizontal: "basic",
-			selectableRange: !n && !o ? 1 : !1,
-			selectableRangeColumns: !n && !o,
-			selectableRangeRows: !n && !o,
+			selectableRange: !n && !a ? 1 : !1,
+			selectableRangeColumns: !n && !a,
+			selectableRangeRows: !n && !a,
 			selectableRangeClearCells: !1,
 			selectableRangeAutoFocus: !1,
 			selectableRangeBlurEditOnNavigate: !1,
@@ -10604,12 +10585,12 @@ var An = class extends Q {
 				resizable: "header",
 				width: 180
 			},
-			columns: a
+			columns: i
 		};
-		this._table = new An(this.refs.tabulatorTarget, s), n || (this._table.on("cellClick", (e, t) => {
-			o || this.handleRowSelection(t.getRow());
+		this._table = new An(this.refs.tabulatorTarget, o), n || (this._table.on("cellClick", (e, t) => {
+			a || this.handleRowSelection(t.getRow());
 		}), this._table.on("cellTap", (e, t) => {
-			o && t.edit(!0);
+			a && t.edit(!0);
 		}), this._table.on("rowClick", (e, t) => {
 			this.handleRowSelection(t);
 		}), this._table.on("rowTap", (e, t) => {

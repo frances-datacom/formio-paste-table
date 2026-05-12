@@ -93,12 +93,10 @@ export default class PasteTableComponent extends PasteTableComponent_base implem
     private containsUnsafePattern;
     private getDataTypeLabel;
     private matchesDataType;
-    private getRuleByHeader;
     /**
      * Hard clear only for security-level issues.
      */
     private clearComponentToEmpty;
-    private createInputEditor;
     private buildRowsFromValue;
     private getInitialTableData;
     private applyStoredValueToTable;
