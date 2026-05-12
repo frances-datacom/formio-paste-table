@@ -672,7 +672,7 @@ export default class PasteTableComponent
     return emailRegex.test(value);
   }
 
-  /*private getRuleByHeader(
+  private getRuleByHeader(
     header: string,
     rules: PasteTableColumnRule[],
   ): PasteTableColumnRule | null {
@@ -685,7 +685,7 @@ export default class PasteTableComponent
     }
 
     return null;
-  }*/
+  }
 
   /**
    * Hard clear only for security-level issues.
@@ -713,7 +713,7 @@ export default class PasteTableComponent
     });
   }
 
-  /*private createInputEditor(
+  private createInputEditor(
     cell: any,
     onRendered: any,
     success: any,
@@ -798,7 +798,7 @@ export default class PasteTableComponent
     });
 
     return input;
-  }*/
+  }
 
   private buildRowsFromValue(
     value: PasteTableValue,
@@ -880,7 +880,7 @@ export default class PasteTableComponent
       return;
     }
 
-    if (!rules.length) {
+    if (!headers.length) {
       this.showError('Please configure at least one table header in the builder.');
       return;
     }
@@ -898,33 +898,24 @@ export default class PasteTableComponent
     }
 
     const isReadOnly = this.isReadOnlyMode();
+    const self = this;
     const initialData = this.getInitialTableData(headers, isReadOnly);
 
-    const columns: any[] = rules.map((rule) => {
-      let editor: string = 'input';
-      let validator: any;
-
-      switch (rule.dataType) {
-        case 'numeric':
-          editor =  'number';
-          break;
-        case 'alphanumeric':
-          validator = 'regex:^[A-Za-z0-9\\s\'’-]+$';
-          break;
-        case 'email':
-          validator = 'regex:^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$';
-          break;
-        default:
-          validator = 'regex:^[A-Za-z\\s\'’-]+$';
-          break;
-      }
-
+    const columns: any[] = headers.map((header) => {
       return {
-        title: rule.header,
-        field: rule.header,
-        maxLength: rule.maxChars,
-        validator: validator,
-        editor: editor,
+        title: header,
+        field: header,
+        editor: isReadOnly
+          ? undefined
+          : function (cell: any, onRendered: any, success: any, cancel: any) {
+            return self.createInputEditor(
+              cell,
+              onRendered,
+              success,
+              cancel,
+              rules,
+            );
+          },
       };
     });
 
@@ -1170,6 +1161,7 @@ export default class PasteTableComponent
 
     this.updateDeleteRowButtonVisibility();
   };
+
   private handleAddRow = () => {
     const rules = this.getConfiguredColumnRules();
     const headers = rules.map((r) => r.header);
