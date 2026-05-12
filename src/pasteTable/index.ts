@@ -909,13 +909,13 @@ export default class PasteTableComponent
           editor =  'number';
           break;
         case 'alphanumeric':
-          validator = 'regex:/^[A-Za-z0-9\\s\'’-]+$/';
+          validator = 'regex:^[A-Za-z0-9\\s\'’-]+$';
           break;
         case 'email':
-          validator = 'regex:/^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/';
+          validator = 'regex:^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$';
           break;
         default:
-          validator = 'regex:/^[A-Za-z\\s\'’-]+$/';
+          validator = 'regex:^[A-Za-z\\s\'’-]+$';
           break;
       }
 

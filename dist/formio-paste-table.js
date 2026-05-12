@@ -10544,13 +10544,13 @@ var An = class extends Q {
 					t = "number";
 					break;
 				case "alphanumeric":
-					n = "regex:/^[A-Za-z0-9\\s'’-]+$/";
+					n = "regex:^[A-Za-z0-9\\s'’-]+$";
 					break;
 				case "email":
-					n = "regex:/^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$/";
+					n = "regex:^[^\\s@<>]+@[^\\s@<>]+\\.[^\\s@<>]+$";
 					break;
 				default:
-					n = "regex:/^[A-Za-z\\s'’-]+$/";
+					n = "regex:^[A-Za-z\\s'’-]+$";
 					break;
 			}
 			return {
